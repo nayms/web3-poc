@@ -22,5 +22,6 @@ This code is based on:
 * Ensure `0x934a0496e1b07e686cddddbe6deb2e9d33a3a7d1` on Sepolia has enough test ETH to pay for gas.
   * _Grab some from the [Alchemy faucet](https://www.alchemy.com/faucets/ethereum-sepolia) if not._
 * Copy `.env.example` to `.env` and fill in the missing values.
+* Run `npm install`
 * Run `npm start`
   * _Sending the transaction to Sepolia may take a while, but it should work and output a Sepolia tx link_
