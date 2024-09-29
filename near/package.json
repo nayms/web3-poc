@@ -7,14 +7,21 @@
     "@ethereumjs/common": "^4.4.0",
     "@ethereumjs/tx": "^5.4.0",
     "@ethereumjs/util": "^9.1.0",
+    "bs58check": "^4.0.0",
     "dotenv": "^16.4.5",
+    "elliptic": "^6.5.7",
     "ethers": "^6.13.2",
+    "js-sha3": "^0.9.3",
     "near-api-js": "^5.0.0",
+    "viem": "^2.21.15",
     "web3": "^4.13.0"
   },
   "scripts": {
     "start": "ts-node src/index.ts"
   },
   "author": "Ramesh Nair <ram@hiddentao.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/elliptic": "^6.4.18"
+  }
 }

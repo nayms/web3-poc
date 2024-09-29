@@ -34,22 +34,18 @@ const abi = [
 ];
 
 const contractAddress = '0xe2a01146FFfC8432497ae49A7a6cBa5B9Abd71A3';
-const senderAddress = '0x6248561fb8ab5D2C35CfeCC6fBCb6497A260359A';
 
 const ethereum = new Ethereum(CHAIN_RPC, CHAIN_ID);
 const near = createWallet(MPC_CONTRACT, NEAR_ACCOUNT_ID, NEAR_PRIVATE_KEY);
 
-// Convert Uint8Array to string
-const uint8ArrayToString = (array: Uint8Array): string => {
-  return Array.from(array, (byte) => String.fromCharCode(byte)).join('');
-};
 
 async function main() {
   const eth = new Ethereum(CHAIN_RPC, CHAIN_ID);
 
   console.log('Initializing Ethereum connection...');
 
-  console.log(`Sender address: ${senderAddress}`);
+  const { address: senderAddress, derivationPath } = await near.deriveAddress();
+  console.log(`Derived sender address: ${senderAddress}`);
 
   // Create payload for the contract call
   console.log('Creating transaction payload...');
@@ -61,7 +57,7 @@ async function main() {
 
   // Sign the transaction (replace this with your MPC signing logic)
   console.log('Signing transaction...');
-  const { big_r, s, recovery_id } = await near.sign(payload, `m/44'/60'/0'/1`, '250000000000000', '1');
+  const { big_r, s, recovery_id } = await near.sign(payload, derivationPath, '250000000000000', '1');
 
   console.log('big_r:', big_r);
   console.log('s:', s);

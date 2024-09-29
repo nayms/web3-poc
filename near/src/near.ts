@@ -1,8 +1,8 @@
 import { Account, KeyPair, Near } from 'near-api-js';
 import * as nearAPI from 'near-api-js';
 import type { KeyPairString } from 'near-api-js/lib/utils';
+import { deriveChildPublicKey, najPublicKeyStrToUncompressedHexPoint, uncompressedHexPointToEvmAddress } from './kdf';
 const { keyStores } = nearAPI;
-
 
 export const createWallet = (mpContractId: string, nearAccountId: string, nearPrivateKey: string) => {
     const keyStore = new keyStores.InMemoryKeyStore();
@@ -21,8 +21,15 @@ export const createWallet = (mpContractId: string, nearAccountId: string, nearPr
 
     const near = new Near(config);
     const account = new Account(near.connection, nearAccountId);
-
-    async function sign(payloadArray: Uint8Array, path: string, gas: string, attachedDeposit: string): Promise<{ big_r: Uint8Array, s: Uint8Array, recovery_id: number }> {
+    
+    const deriveAddress = async (): Promise<{ publicKey: Buffer, address: string, derivationPath: string }> => {
+        const derivationPath = 'ethereum-1';
+        const publicKey = await deriveChildPublicKey(najPublicKeyStrToUncompressedHexPoint(), nearAccountId, derivationPath);
+        const address = await uncompressedHexPointToEvmAddress(publicKey);
+        return { publicKey: Buffer.from(publicKey, 'hex'), address, derivationPath };
+    }
+    
+    const sign = async (payloadArray: Uint8Array, path: string, gas: string, attachedDeposit: string): Promise<{ big_r: Uint8Array, s: Uint8Array, recovery_id: number }> => {
         const payload = Array.from(payloadArray)
         
         let args = {
@@ -75,6 +82,6 @@ export const createWallet = (mpContractId: string, nearAccountId: string, nearPr
     
     }
     
-    return { near, account, sign };
+    return { near, account, sign, deriveAddress };
 }
 

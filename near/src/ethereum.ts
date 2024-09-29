@@ -6,20 +6,18 @@ import { Web3 } from 'web3';
 
 export class Ethereum {
   private web3: Web3;
-  private provider: JsonRpcProvider;
   private chain_id: number;
 
   constructor(chain_rpc: string, chain_id: number) {
     this.web3 = new Web3(chain_rpc);
-    this.provider = new JsonRpcProvider(chain_rpc);
     this.chain_id = chain_id;
     this.queryGasPrice();
   }
 
   async queryGasPrice() {
-    const maxFeePerGas = await this.web3.eth.getGasPrice();
+    const gasPrice = await this.web3.eth.getGasPrice();
     const maxPriorityFeePerGas = await this.web3.eth.getMaxPriorityFeePerGas();
-    return { maxFeePerGas, maxPriorityFeePerGas };
+    return { maxFeePerGas: gasPrice + maxPriorityFeePerGas, maxPriorityFeePerGas };
   }
 
   createTransactionData(receiver: string, abi: any, methodName: string, args: any[] = []) {
