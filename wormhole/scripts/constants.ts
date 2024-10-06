@@ -1,0 +1,1 @@
+export const MNEMONIC = 'inch deny wing welcome pumpkin mask snack common avocado vicious recycle horror';

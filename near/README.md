@@ -19,7 +19,7 @@ This code is based on:
 
 _Note: Looking at the on-chain [signing code example](https://github.com/near-examples/chainsig-script/blob/main/near_contracts/src/lib.rs) it's clear that even though we can get the MPC contract to sign an ethereum transaction from within a NEAR contract we would still need to submit that transaction to ethereum ourselves through an off-chain mechanism._
 
-## Getting started - cross-chain call via CLI script
+## Dev guide
 
 * Ensure `0x934a0496e1b07e686cddddbe6deb2e9d33a3a7d1` on Sepolia has enough test ETH to pay for gas.
   * _Grab some from the [Alchemy faucet](https://www.alchemy.com/faucets/ethereum-sepolia) if not._

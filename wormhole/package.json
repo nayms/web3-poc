@@ -1,0 +1,18 @@
+{
+  "name": "@nayms/web3-poc-wormhole",
+  "version": "1.0.0",
+  "description": "This is a demo of NEAR-to-Base transfers using [Wormhole](https://wormhole.com/).",
+  "main": "index.js",
+  "scripts": {
+    "build": "forge build",
+    "test-evm-evm": "ts-node --project tsconfig-node.json ./scripts/test-evm-evm.ts"
+  },
+  "author": "Ramesh Nair <ram@hiddentao.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@wormhole-foundation/sdk": "^0.10.9",
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.18",
+    "yoctocolors-cjs": "^2.1.2"
+  }
+}
