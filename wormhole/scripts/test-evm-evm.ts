@@ -66,10 +66,10 @@ const mainArtifact = JSON.parse(readFileSync(path.resolve(__dirname, '../out/Mai
 
 const interfaceAbi = parseAbi([
   "function sendMessage(string memory message) public payable returns (uint64 messageSequence)",
-  "function receiveMessage(bytes memory encodedMessage) public",
+  "function receiveMessage(bytes calldata encodedMessage) public",
   "function receivedMessageHashes(uint256 index) view returns (bytes32)",
   "function receivedMessages(bytes32 hash) view returns (string memory)",
-  "function getReceivedMessagesCount() public view returns (uint256)",
+  "function getNumberOfReceivedMessages() public view returns (uint256)",
   "function registerEmitter(uint16 chainId, bytes32 emitterAddress) public",
 ])
 
@@ -239,15 +239,17 @@ async function main() {
 
   logSection('Submitting VAA to Base Sepolia');
 
+  const vaaHex = `0x${Buffer.from(vaaUint8Array).toString('hex')}`;
+
   await sendAndConfirmTransaction(
     // @ts-ignore
-    await base.contract.write.receiveMessage([vaaUint8Array]),
+    await base.contract.write.receiveMessage([vaaHex]),
     networks.base
   );
 
   logSection('Checking to see if message was received on Base Sepolia');
 
-  const numberOfMessages = await base.contract.read.getReceivedMessagesCount();
+  const numberOfMessages = await base.contract.read.getNumberOfReceivedMessages();
   console.log(yellow(`Number of messages: ${numberOfMessages}`));
 
   const msgHash = await base.contract.read.receivedMessageHashes([0n]);

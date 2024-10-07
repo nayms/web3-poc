@@ -2,10 +2,6 @@
 
 This is a demo of Aptos-to-Ethereum transfers using [Wormhole](https://wormhole.com/).
 
-How it works:
-
-_TODO_
-
 Links:
   * [Wormhole live contract addresses](https://wormhole.com/docs/build/reference/contract-addresses/)
   * [Core contracts docs](https://wormhole.com/docs/build/contract-integrations/core-contracts/)
@@ -14,7 +10,8 @@ Links:
 
 ### Testnet transfer: Arbitrum Sepolia -> Base Sepolia
 
-We will be transferring from `Arbitrum Sepolia` to `Base Sepolia`. To do this we will deploy the [same contract](./evm/Main.sol) to both chains.
+
+We will be transferring from `Arbitrum Sepolia` to `Base Sepolia`. To do this we will deploy the [same contract](./evm/Main.sol) to both chains. The way it works is that we first make a call on Arbitrum, which triggers the Wormhole Guardian's to sign an attestation to produce a [VAA](https://wormhole.com/docs/learn/infrastructure/vaas/). We then fetch this VAA using the [Wormhole Scan APi](https://docs.wormholescan.io/) and then manually submit it as a transaction on Base chain.
 
 First ensure that the test wallet has enough test ETH in it on both chains (needed to deploy contracts and make calls):
   * Seed: `inch deny wing welcome pumpkin mask snack common avocado vicious recycle horror`
@@ -32,6 +29,7 @@ Now to run the code:
       * Example contracts you can use:
         * Arbitrum Sepolia - [0x5f0f7f263ea6a62ffd6f9070183468ac58e38719](https://sepolia.arbiscan.io/address/0x5f0f7f263ea6a62ffd6f9070183468ac58e38719)
         * Base Sepolia - [0x82af0b266d0b671f65982aab78a3373ce80631d4](https://sepolia.basescan.org/address/0x82af0b266d0b671f65982aab78a3373ce80631d4)
+5. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
 
 
 ### Local test (NOT YET WORKING!)
