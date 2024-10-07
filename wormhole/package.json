@@ -4,8 +4,10 @@
   "description": "This is a demo of NEAR-to-Base transfers using [Wormhole](https://wormhole.com/).",
   "main": "index.js",
   "scripts": {
-    "build": "forge build",
-    "test-evm-evm": "ts-node --project tsconfig-node.json ./scripts/test-evm-evm.ts"
+    "prepare": "cd near && npm install",
+    "build-evm": "forge build",
+    "test-evm-evm": "ts-node --project tsconfig-node.json ./scripts/test-evm-evm.ts",
+    "build-near": "cd near && npm run build"
   },
   "author": "Ramesh Nair <ram@hiddentao.com>",
   "license": "ISC",
