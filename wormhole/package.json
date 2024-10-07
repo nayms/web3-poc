@@ -13,6 +13,10 @@
     "@wormhole-foundation/sdk": "^0.10.9",
     "dotenv": "^16.4.5",
     "viem": "^2.21.18",
+    "yargs": "^17.7.2",
     "yoctocolors-cjs": "^2.1.2"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.33"
   }
 }

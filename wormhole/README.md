@@ -24,11 +24,14 @@ First ensure that the test wallet has enough test ETH in it on both chains (need
 
 Now to run the code:
 
-* Install [Rust](https://www.rust-lang.org/tools/install) and [Foundry](https://getfoundry.sh/).
-* Run `foundryup`.
-* Run `build` to build the EVM contracts.
-* Run `deploy-evm` to deploy the EVM contracts to both `Arbitrum Sepolia` and `Base Sepolia` networks.
-
+1. Install [Rust](https://www.rust-lang.org/tools/install) and [Foundry](https://getfoundry.sh/).
+2. Run `foundryup`.
+3. Run `npm run build` to build the EVM contracts.
+4. Run `npm run test-evm-evm` to deploy the EVM contracts to both `Arbitrum Sepolia` and `Base Sepolia` networks.
+    * To test using previously deployed contracts: `npm run test-evm-evm -- --arbitrum-address 0x. --base-address 0x.`
+      * Example contracts you can use:
+        * Arbitrum Sepolia - [0x5f0f7f263ea6a62ffd6f9070183468ac58e38719](https://sepolia.arbiscan.io/address/0x5f0f7f263ea6a62ffd6f9070183468ac58e38719)
+        * Base Sepolia - [0x82af0b266d0b671f65982aab78a3373ce80631d4](https://sepolia.basescan.org/address/0x82af0b266d0b671f65982aab78a3373ce80631d4)
 
 
 ### Local test (NOT YET WORKING!)
