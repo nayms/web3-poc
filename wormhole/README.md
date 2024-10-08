@@ -39,18 +39,23 @@ Now to run the code:
 
 1. Install [Rust](https://www.rust-lang.org/tools/install) and [Foundry](https://getfoundry.sh/).
 2. Run `foundryup`.
-3. Run `npm run build-evm` to build the EVM contracts.
-4. Run `npm run test-evm-evm` to deploy the EVM contracts to both `Arbitrum Sepolia` and `Base Sepolia` networks.
+3. Run `npm run test-evm-evm` to deploy the EVM contracts to both `Arbitrum Sepolia` and `Base Sepolia` networks.
     * To test using previously deployed contracts: `npm run test-evm-evm -- --arbitrum-address 0x. --base-address 0x.`
       * Example contracts you can use:
         * Arbitrum Sepolia - [0x5f0f7f263ea6a62ffd6f9070183468ac58e38719](https://sepolia.arbiscan.io/address/0x5f0f7f263ea6a62ffd6f9070183468ac58e38719)
         * Base Sepolia - [0x82af0b266d0b671f65982aab78a3373ce80631d4](https://sepolia.basescan.org/address/0x82af0b266d0b671f65982aab78a3373ce80631d4)
-5. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
+4. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
 
 
 ### Testnet transfer: NEAR testnet -> Base Sepolia
 
-
+1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
+2. Create a NEAR testnet account: `near create-account naymspoc-1.testnet --useFaucet`
+    * _NOTE: Replace `naymspoc-1` with some other id of your choice_
+3. Run `npm run build-near`
+4. Run `npm run test-near-evm -- --near-account naymspoc-1`
+    * _NOTE: Replace `naymspoc-1` with some your chosen id_
+5. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
 
 
 ### Local test (NOT YET WORKING!)

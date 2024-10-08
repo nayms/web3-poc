@@ -4,7 +4,8 @@
   "license": "(MIT AND Apache-2.0)",
   "type": "module",
   "scripts": {
-    "build": "near-sdk-js build src/contract.ts build/hello_near.wasm"
+    "build": "near-sdk-js build src/contract.ts build/main.wasm",
+    "deploy": "near deploy <created-account> build/main.wasm"
   },
   "dependencies": {
     "near-sdk-js": "2.0.0"

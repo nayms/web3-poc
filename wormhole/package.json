@@ -5,20 +5,21 @@
   "main": "index.js",
   "scripts": {
     "prepare": "cd near && npm install",
-    "build-evm": "forge build",
     "test-evm-evm": "ts-node --project tsconfig-node.json ./scripts/test-evm-evm.ts",
-    "build-near": "cd near && npm run build"
+    "test-near-evm": "ts-node --project tsconfig-node.json ./scripts/test-near-evm.ts"
   },
   "author": "Ramesh Nair <ram@hiddentao.com>",
   "license": "ISC",
   "dependencies": {
     "@wormhole-foundation/sdk": "^0.10.9",
     "dotenv": "^16.4.5",
+    "shelljs": "^0.8.5",
     "viem": "^2.21.18",
     "yargs": "^17.7.2",
     "yoctocolors-cjs": "^2.1.2"
   },
   "devDependencies": {
+    "@types/shelljs": "^0.8.15",
     "@types/yargs": "^17.0.33"
   }
 }
