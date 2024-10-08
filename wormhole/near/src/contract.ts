@@ -74,6 +74,8 @@ class Main {
       message,
     });
 
+    near.log(`Encoded message: ${encodedMessage}`);
+
     NearPromise.new(this.wormhole).functionCall("publish_message", encodedMessage.toString(), deposit, THIRTY_TGAS)
   }
 

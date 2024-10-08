@@ -5,7 +5,7 @@ import {
   buildEvmContracts, 
   logSection
 } from './evm';
-import { buildNearContracts, createNearAccount, deployNearContracts } from "./near";
+import { buildNearContracts, callContract, createNearAccount, deployNearContracts } from "./near";
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -19,6 +19,7 @@ async function main() {
   const nearAccount = await createNearAccount()
   await buildNearContracts()
   await deployNearContracts({ nearAccount })
+  await callContract({ nearAccount, method: 'send_message', args: '{"message": "Hello, EVM!"}' })
 }
 
 main().then(() => {
