@@ -5,20 +5,20 @@ import { http, createPublicClient, createWalletClient, getContract, parseAbi } f
 import { mnemonicToAccount } from 'viem/accounts';
 import { arbitrumSepolia, baseSepolia } from 'viem/chains';
 import { blue, bold, cyan, green, red, yellow } from 'yoctocolors-cjs';
-import { MNEMONIC } from './constants'
+import { MNEMONIC, WORMHOLE_NETWORKS } from './constants'
+import { buildExecuteShellCommand, executeShellCommand } from './utils';
+
+const EVM_CWD = path.resolve(__dirname, '..');
+const execShell = buildExecuteShellCommand({ cwd: EVM_CWD });
 
 // Export the account
 export const account = mnemonicToAccount(MNEMONIC);
 
 // Export networks
 export const networks = {
-  arbitrum: { 
-    name: 'Arbitrum Sepolia', 
-    chain: arbitrumSepolia, 
-    explorer: 'https://sepolia.arbiscan.io',
-    wormholeAddress: '0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35',
-    wormholeChainId: 10003,
-    wormholeFinality: 200,
+  arbitrum: {
+    ...WORMHOLE_NETWORKS.arbitrum,
+    chain: arbitrumSepolia,
     publicClient: createPublicClient({
       chain: arbitrumSepolia,
       transport: http(),
@@ -29,13 +29,9 @@ export const networks = {
       transport: http(),
     }),
   },
-  base: { 
-    name: 'Base Sepolia', 
-    chain: baseSepolia, 
-    explorer: 'https://sepolia.basescan.org',
-    wormholeAddress: '0x79A1027a6A159502049F10906D333EC57E95F083',
-    wormholeChainId: 10004,
-    wormholeFinality: 200,
+  base: {
+    ...WORMHOLE_NETWORKS.base,
+    chain: baseSepolia,
     publicClient: createPublicClient({
       chain: baseSepolia,
       transport: http(),
@@ -182,7 +178,7 @@ export const buildEvmContracts = async () => {
   console.log(blue('Building EVM contracts...'));
   
   // Execute the forge build command
-  const result = shell.exec('forge build', { silent: true, cwd: path.resolve(__dirname, '..') });
+  const result = execShell('forge build');
   
   if (result.code !== 0) {
     console.error(red('Error building contracts:'), result.stderr);

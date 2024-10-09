@@ -1,6 +1,6 @@
-import { assert, NearBindgen, NearPromise, type PromiseIndex, call, initialize, near } from 'near-sdk-js';
+import { assert, NearBindgen, NearPromise, type PromiseIndex, call, encode, initialize, near } from 'near-sdk-js';
 
-const THIRTY_TGAS = BigInt("30000000000000");
+const BASIC_GAS = BigInt("30000000000000");
 const NO_DEPOSIT = BigInt(0);
 const NO_ARGS = JSON.stringify({});
 
@@ -11,12 +11,14 @@ class Main {
   wormhole: string;
   chainId: number;
   wormholeFinality: number;
+  messageFee: bigint;
 
   constructor() {
     this.owner = '';
     this.wormhole = '';
     this.chainId = 0;
     this.wormholeFinality = 0;
+    this.messageFee = BigInt(0);
   }
 
   @initialize({})
@@ -31,42 +33,38 @@ class Main {
     this.wormholeFinality = wormholeFinality;
   }
 
+  @call({})
+  update_message_fee(): NearPromise {
+    return NearPromise.new(this.wormhole)
+      .functionCall("message_fee", NO_ARGS, NO_DEPOSIT, BASIC_GAS)
+      .then(
+        NearPromise.new(near.currentAccountId())
+          .functionCall(
+            "_update_message_fee_callback",
+            NO_ARGS,
+            NO_DEPOSIT,
+            BASIC_GAS,
+          )
+      );
+  }
+
+  @call({ privateFunction: true })
+  _update_message_fee_callback(): void {
+    try {
+      this.messageFee = BigInt(near.promiseResult(0 as PromiseIndex));
+      near.log(`Updated message fee: ${this.messageFee}`);
+    } catch {
+      near.log("Failed to update message fee");
+    }
+  }
+
   @call({ payableFunction: true })
   send_message({ message }: { message: string }): NearPromise {
     const deposit = near.attachedDeposit();
 
-    const promise = NearPromise.new(this.wormhole)
-    .functionCall("message_fee", NO_ARGS, NO_DEPOSIT, THIRTY_TGAS)
-    .then(
-      NearPromise.new(near.currentAccountId())
-        .functionCall(
-          "_send_message",
-          JSON.stringify({ message }),
-          deposit,
-          THIRTY_TGAS,
-        ),
-    );
-
-    return promise.asReturn();
-  }
-
-  @call({ privateFunction: true })
-  _send_message({ message }: { message: string }): void {
-    let fee: bigint;
-
-    try {
-      fee = BigInt(near.promiseResult(0 as PromiseIndex));
-      near.log(`The message fee is: ${fee}`);
-    } catch {
-      near.log("Failed to fetch message fee");
-      return
-    }
-
-    const deposit = near.attachedDeposit();
-
-    if (deposit < fee) {
+    if (deposit < this.messageFee) {
       near.log("Attached deposit is less than the message fee");
-      return;
+      return NearPromise.new(near.currentAccountId());
     }
 
     const encodedMessage = this.encodeMessage({
@@ -76,12 +74,13 @@ class Main {
 
     near.log(`Encoded message: ${encodedMessage}`);
 
-    NearPromise.new(this.wormhole).functionCall("publish_message", encodedMessage.toString(), deposit, THIRTY_TGAS)
+    return NearPromise.new(this.wormhole)
+      .functionCall("publish_message", encodedMessage.toString(), deposit, BigInt("200000000000000"))
+      .asReturn();
   }
 
   private encodeMessage(message: { payloadId: number; message: string }): Uint8Array {
-    const encoder = new TextEncoder();
-    const messageBytes = encoder.encode(message.message);
+    const messageBytes = encode(message.message);
     const result = new Uint8Array(3 + messageBytes.length);
     result[0] = message.payloadId;
     result[1] = messageBytes.length & 0xff;
