@@ -84,11 +84,11 @@ class Main {
 
     near.log(`Encoded message: ${encodedMessage}`);
 
-    near.log(`Nonce: ${this.nonce}`);
     this.nonce += 1;
+    near.log(`Nonce: ${this.nonce}`);
 
     return NearPromise.new(this.wormhole)
-      .functionCall("publish_message", JSON.stringify({ data: encodedMessage.toString(), nonce: this.nonce - 1 }), deposit, BigInt("200000000000000"))
+      .functionCall("publish_message", JSON.stringify({ data: encodedMessage.toString(), nonce: this.nonce }), deposit, BigInt("200000000000000"))
       .then(
         NearPromise.new(near.currentAccountId())
           .functionCall(
