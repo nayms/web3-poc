@@ -1,4 +1,4 @@
-import { assert, NearBindgen, NearPromise, type PromiseIndex, call, encode, initialize, near } from 'near-sdk-js';
+import { assert, NearBindgen, NearPromise, type PromiseIndex, call, encode, initialize, near, view } from 'near-sdk-js';
 
 const BASIC_GAS = BigInt("30000000000000");
 const NO_DEPOSIT = BigInt(0);
@@ -10,27 +10,40 @@ class Main {
   owner: string;
   wormhole: string;
   chainId: number;
-  wormholeFinality: number;
+  nonce: number;
   messageFee: bigint;
+  lastMessageSequence: bigint;
 
   constructor() {
     this.owner = '';
     this.wormhole = '';
     this.chainId = 0;
-    this.wormholeFinality = 0;
+    this.nonce = 0;
     this.messageFee = BigInt(0);
+    this.lastMessageSequence = BigInt(0);
   }
 
   @initialize({})
-  init({ wormhole, chainId, wormholeFinality }: { wormhole: string; chainId: number; wormholeFinality: number }): void {
+  init({ wormhole, chainId }: { wormhole: string; chainId: number }): void {
     assert(!near.storageRead('STATE'), "Already initialized");
     assert(chainId > 0, "invalid chainId");
-    assert(wormholeFinality > 0, "invalid wormholeFinality");
 
     this.owner = near.predecessorAccountId();
     this.wormhole = wormhole;
     this.chainId = chainId;
-    this.wormholeFinality = wormholeFinality;
+  }
+
+  @call({ payableFunction: true })
+  register_emitter(): NearPromise {
+    const deposit = near.attachedDeposit();
+    assert(deposit > BigInt(0), "Must attach a deposit");
+
+    near.log(`Current account id: ${near.currentAccountId()}`);
+    near.log(`Deposit: ${deposit}`);
+
+    return NearPromise.new(this.wormhole)
+      .functionCall("register_emitter", JSON.stringify({ emitter: near.currentAccountId() }), deposit, BigInt("100000000000000"))
+      .asReturn();
   }
 
   @call({})
@@ -45,7 +58,8 @@ class Main {
             NO_DEPOSIT,
             BASIC_GAS,
           )
-      );
+      )
+      .asReturn();
   }
 
   @call({ privateFunction: true })
@@ -61,11 +75,7 @@ class Main {
   @call({ payableFunction: true })
   send_message({ message }: { message: string }): NearPromise {
     const deposit = near.attachedDeposit();
-
-    if (deposit < this.messageFee) {
-      near.log("Attached deposit is less than the message fee");
-      return NearPromise.new(near.currentAccountId());
-    }
+    assert(deposit >= this.messageFee, "Attached deposit is less than the message fee");
 
     const encodedMessage = this.encodeMessage({
       payloadId: 1,
@@ -74,9 +84,36 @@ class Main {
 
     near.log(`Encoded message: ${encodedMessage}`);
 
+    near.log(`Nonce: ${this.nonce}`);
+    this.nonce += 1;
+
     return NearPromise.new(this.wormhole)
-      .functionCall("publish_message", encodedMessage.toString(), deposit, BigInt("200000000000000"))
+      .functionCall("publish_message", JSON.stringify({ data: encodedMessage.toString(), nonce: this.nonce - 1 }), deposit, BigInt("200000000000000"))
+      .then(
+        NearPromise.new(near.currentAccountId())
+          .functionCall(
+            "_publish_message_callback",
+            NO_ARGS,
+            NO_DEPOSIT,
+            BASIC_GAS,
+          )
+      )
       .asReturn();
+  }
+
+  @call({ privateFunction: true })
+  _publish_message_callback(): void {
+    try {
+      this.lastMessageSequence = BigInt(near.promiseResult(0 as PromiseIndex));
+      near.log(`Last message sequence: ${this.lastMessageSequence}`);
+    } catch {
+      near.log("Failed to update last message sequence");
+    }
+  }
+
+  @view({})
+  get_last_message_sequence(): bigint {
+    return this.lastMessageSequence;
   }
 
   private encodeMessage(message: { payloadId: number; message: string }): Uint8Array {

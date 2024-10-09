@@ -1,12 +1,12 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { bold, green, red, yellow } from 'yoctocolors-cjs';
+import { blue, bold, green, red, yellow } from 'yoctocolors-cjs';
 import { WORMHOLE_NETWORKS } from './constants';
 import { 
   buildEvmContracts, 
   logSection
 } from './evm';
-import { buildNearContracts, callContract, createNearAccount, deployNearContracts } from "./near";
+import { buildNearContracts, callContract, callContractView, createNearAccount, deployNearContracts } from "./near";
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -38,12 +38,20 @@ async function main() {
     args: { 
       wormhole: nearNetwork.wormholeAddress, 
       chainId: nearNetwork.wormholeChainId, 
-      wormholeFinality: nearNetwork.wormholeFinality 
-    } 
+    },
+    gas: 100000000000000n 
   })
   console.log(green('NEAR contract initialized successfully'));
 
-  // TODO: call the update_message_fee method on the contract to get the latest message fee
+  logSection('Registering Emitter');
+  await callContract({ 
+    nearAccount, 
+    method: 'register_emitter', 
+    gas: 300000000000000n,
+    deposit: 1n,
+  })
+  console.log(green('Emitter registered successfully'));
+
   logSection('Updating Message Fee');
   await callContract({ 
     nearAccount, 
@@ -59,9 +67,20 @@ async function main() {
     nearAccount, 
     method: 'send_message', 
     args: { message }, 
-    gas: 200000000000000n 
+    gas: 300000000000000n 
   })
   console.log(green('Message sent successfully'));
+
+  // wait 2 seconds for the callback to be processed
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  logSection('Reading message sequence');
+  const messageSequence = Number.parseInt(JSON.parse(await callContractView({ 
+    nearAccount, 
+    method: 'get_last_message_sequence', 
+    args: {} 
+  })), 10)
+  console.log(blue(`Message sequence: ${messageSequence}`));
 }
 
 main().then(() => {
