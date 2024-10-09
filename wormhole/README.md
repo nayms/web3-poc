@@ -51,7 +51,7 @@ Now to run the code:
 
 1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
 4. Run `npm run test-near-evm`
-5. _TBC_
+5. _TBC_ - at present the NEAR transaction isn't showing up in wormholescan so we can't fetch the VAA either, trying to get support on this.
 
 
 ### Local test (NOT YET WORKING!)
