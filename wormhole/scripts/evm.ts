@@ -62,11 +62,6 @@ export const wormholeCoreAbi = parseAbi([
   "event LogMessagePublished(address indexed sender, uint64 sequence, uint32 nonce, bytes payload, uint8 consistencyLevel)",
 ]);
 
-// Export utility functions
-export const base64ToUint8Array = (base64: string): Uint8Array => {
-  const b = Buffer.from(base64, 'base64');
-  return new Uint8Array(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength));  
-}
 
 export function getExplorerLink(network: typeof networks[keyof typeof networks], type: 'address' | 'tx', value: string): string {
   return `${network.explorer}/${type}/${value}`;
@@ -78,30 +73,6 @@ export function logSection(title: string) {
   console.log(`${cyan('='.repeat(50))}\n`);
 }
 
-export const fetchVAA = async (chainId: number, emitterAddress: string, sequence: bigint): Promise<string> => {
-  console.log(yellow(`Fetching VAA for chainId: ${chainId}, emitterAddress: ${emitterAddress}, sequence: ${sequence}`));
-  
-  const url = `https://api.testnet.wormholescan.io/api/v1/vaas/${chainId}/${emitterAddress}/${sequence}`;
-  console.log(blue(`API URL: ${url}`));
-
-  const response = await fetch(url);
-  
-  if (!response.ok) {
-    console.error(red(`Failed to fetch VAA. Status: ${response.status}`));
-    throw new Error(`Failed to fetch VAA: ${response.statusText}`);
-  }
-
-  const { data } = await response.json() as any;
-  console.log(green('VAA fetched successfully'));
-
-  if (!data.vaa) {
-    throw new Error('VAA not found or not yet available')
-  }
-
-  console.log(yellow(`VAA: ${data.vaa}`));
-
-  return data.vaa as string
-};
 
 // Export contract deployment and interaction functions
 export async function deployEvmContract(network: typeof networks[keyof typeof networks]) {

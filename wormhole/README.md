@@ -50,12 +50,8 @@ Now to run the code:
 ### Testnet transfer: NEAR testnet -> Base Sepolia
 
 1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
-2. Create a NEAR testnet account: `near create-account naymspoc-1.testnet --useFaucet`
-    * _NOTE: Replace `naymspoc-1` with some other id of your choice_
-3. Run `npm run build-near`
-4. Run `npm run test-near-evm -- --near-account naymspoc-1`
-    * _NOTE: Replace `naymspoc-1` with some your chosen id_
-5. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
+4. Run `npm run test-near-evm`
+5. _TBC_
 
 
 ### Local test (NOT YET WORKING!)

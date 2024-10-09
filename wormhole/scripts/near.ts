@@ -30,12 +30,12 @@ export const callContract = async ({ nearAccount, method, args = {}, gas = 30000
   console.log(blue(`Calling NEAR contract on ${nearAccount}, method: ${method}, args: ${args}`));
   const ret = execShell(`near call ${nearAccount} ${method} '${JSON.stringify(args)}' --accountId ${nearAccount} --gas ${gas} --deposit ${deposit}`)
   console.log(green('Contract called successfully'));
-  return ret.stdout;
+  return ret.stdout + ret.stderr;
 }
 
 export const callContractView = async ({ nearAccount, method, args = {} }: { nearAccount: string, method: string, args?: object }) => { 
   console.log(blue(`Calling NEAR contract on ${nearAccount}, method: ${method}, args: ${args}`));
   const ret = execShell(`near view ${nearAccount} ${method} '${JSON.stringify(args)}'`)
   console.log(green('Contract called successfully'));
-  return ret.stdout;
+  return ret.stdout + ret.stderr;
 }

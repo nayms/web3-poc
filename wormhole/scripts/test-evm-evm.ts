@@ -4,15 +4,14 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { bold, green, red, yellow } from 'yoctocolors-cjs';
 import { 
-  base64ToUint8Array, 
   buildEvmContracts, 
-  fetchVAA, 
   getOrDeployEvmContract, 
   logSection, 
   networks, 
   sendAndConfirmEvmTransaction, 
   wormholeCoreAbi 
 } from './evm';
+import { base64ToUint8Array, fetchVAA } from "./utils";
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))

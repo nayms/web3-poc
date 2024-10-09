@@ -1,5 +1,5 @@
 import shell from 'shelljs';
-import { blue, red } from "yoctocolors-cjs";
+import { blue, green, red, yellow } from "yoctocolors-cjs";
 
 
 // New method to execute shell commands with logging
@@ -31,3 +31,35 @@ export const buildExecuteShellCommand = (options: ExecuteShellCommandOptions) =>
     executeShellCommand(command, { ...options, ...opts });
 }
 
+
+export const fetchVAA = async (chainId: number, emitterAddress: string, sequence: bigint): Promise<string> => {
+  console.log(yellow(`Fetching VAA for chainId: ${chainId}, emitterAddress: ${emitterAddress}, sequence: ${sequence}`));
+  
+  const url = `https://api.testnet.wormholescan.io/api/v1/vaas/${chainId}/${emitterAddress}/${sequence}`;
+  console.log(blue(`API URL: ${url}`));
+
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    console.error(red(`Failed to fetch VAA. Status: ${response.status}`));
+    throw new Error(`Failed to fetch VAA: ${response.statusText}`);
+  }
+
+  const { data } = await response.json() as any;
+  console.log(green('VAA fetched successfully'));
+
+  if (!data.vaa) {
+    throw new Error('VAA not found or not yet available')
+  }
+
+  console.log(yellow(`VAA: ${data.vaa}`));
+
+  return data.vaa as string
+};
+
+
+// Export utility functions
+export const base64ToUint8Array = (base64: string): Uint8Array => {
+  const b = Buffer.from(base64, 'base64');
+  return new Uint8Array(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength));  
+}

@@ -12,7 +12,6 @@ class Main {
   chainId: number;
   nonce: number;
   messageFee: bigint;
-  lastMessageSequence: bigint;
 
   constructor() {
     this.owner = '';
@@ -20,7 +19,6 @@ class Main {
     this.chainId = 0;
     this.nonce = 0;
     this.messageFee = BigInt(0);
-    this.lastMessageSequence = BigInt(0);
   }
 
   @initialize({})
@@ -89,31 +87,7 @@ class Main {
 
     return NearPromise.new(this.wormhole)
       .functionCall("publish_message", JSON.stringify({ data: encodedMessage.toString(), nonce: this.nonce }), deposit, BigInt("200000000000000"))
-      .then(
-        NearPromise.new(near.currentAccountId())
-          .functionCall(
-            "_publish_message_callback",
-            NO_ARGS,
-            NO_DEPOSIT,
-            BASIC_GAS,
-          )
-      )
       .asReturn();
-  }
-
-  @call({ privateFunction: true })
-  _publish_message_callback(): void {
-    try {
-      this.lastMessageSequence = BigInt(near.promiseResult(0 as PromiseIndex));
-      near.log(`Last message sequence: ${this.lastMessageSequence}`);
-    } catch {
-      near.log("Failed to update last message sequence");
-    }
-  }
-
-  @view({})
-  get_last_message_sequence(): bigint {
-    return this.lastMessageSequence;
   }
 
   private encodeMessage(message: { payloadId: number; message: string }): Uint8Array {

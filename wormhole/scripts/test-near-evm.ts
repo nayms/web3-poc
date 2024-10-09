@@ -1,3 +1,4 @@
+import { deserialize } from '@wormhole-foundation/sdk';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { blue, bold, green, red, yellow } from 'yoctocolors-cjs';
@@ -7,6 +8,7 @@ import {
   logSection
 } from './evm';
 import { buildNearContracts, callContract, callContractView, createNearAccount, deployNearContracts } from "./near";
+import { base64ToUint8Array, fetchVAA } from './utils';
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -63,7 +65,7 @@ async function main() {
   logSection('Sending Message from NEAR to EVM');
   const message = "Hello, EVM!";
   console.log(yellow(`Message: "${message}"`));
-  await callContract({ 
+  const output = await callContract({ 
     nearAccount, 
     method: 'send_message', 
     args: { message }, 
@@ -71,16 +73,23 @@ async function main() {
   })
   console.log(green('Message sent successfully'));
 
-  // wait 2 seconds for the callback to be processed
-  await new Promise(resolve => setTimeout(resolve, 2000));
-
-  logSection('Reading message sequence');
-  const messageSequence = Number.parseInt(JSON.parse(await callContractView({ 
-    nearAccount, 
-    method: 'get_last_message_sequence', 
-    args: {} 
-  })), 10)
+  // parse the message to extract the JSON: EVENT_JSON:{"standard":"wormhole","event":"publish","data":"1,11,0,72,101,108,108,111,44,32,69,86,77,33","nonce":1,"emitter":"942298bcc4f392571b28caa4993067f0977b5c565f90889713fb695f61c3a097","seq":1,"block":176373165}
+  const jsonString = output.match(/EVENT_JSON:({.*})/)?.[1];
+  if (!jsonString) {
+    throw new Error('Failed to parse result output');
+  }
+  const json = JSON.parse(jsonString);
+  const messageSequence = json.seq;
+  const emitterId = json.emitter;
+  console.log(blue(`Emitter ID: ${emitterId}`));
   console.log(blue(`Message sequence: ${messageSequence}`));
+
+  // fetch VAA from wormhole api
+  const vaaBase64 = await fetchVAA(WORMHOLE_NETWORKS.near.wormholeChainId, emitterId, messageSequence)
+  const vaaUint8Array = base64ToUint8Array(vaaBase64);
+  // decode vaa
+  const decodedVAA = deserialize("Uint8Array", vaaUint8Array);
+  console.log(yellow("Decoded VAA:"), decodedVAA);
 }
 
 main().then(() => {
