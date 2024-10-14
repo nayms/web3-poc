@@ -4,9 +4,11 @@
   "description": "This is a demo of NEAR-to-Base transfers using [Wormhole](https://wormhole.com/).",
   "main": "index.js",
   "scripts": {
-    "prepare": "cd near && npm install",
+    "prepare": "cd near && npm install && setup-sui",
+    "setup-sui": "git clone https://github.com/wormhole-foundation/wormhole.git ./sui/wormhole && cp sui/wormhole/sui/wormhole/Move.testnet.toml sui/wormhole/sui/wormhole/Move.toml",
     "test-evm-evm": "ts-node --project tsconfig-node.json ./scripts/test-evm-evm.ts",
-    "test-near-evm": "ts-node --project tsconfig-node.json ./scripts/test-near-evm.ts"
+    "test-near-evm": "ts-node --project tsconfig-node.json ./scripts/test-near-evm.ts",
+    "test-sui-evm": "ts-node --project tsconfig-node.json ./scripts/test-sui-evm.ts"
   },
   "author": "Ramesh Nair <ram@hiddentao.com>",
   "license": "ISC",
