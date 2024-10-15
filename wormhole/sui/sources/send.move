@@ -1,21 +1,20 @@
 module sui_gateway::send {
-    /// The `Main` struct stores the state of the contract.
-    ///
-    /// Fields:
-    /// - `id`: Unique identifier for the contract object.
-    /// - `owner`: The address of the owner of the contract.
-    /// - `wormhole`: The address of the Wormhole contract.
-    /// - `chain_id`: The chain ID.
-    /// - `nonce`: A counter used for message sending.
-    /// - `message_fee`: The fee required to send a message.
+    use wormhole::emitter::EmitterCap;
+    use wormhole::state::State;
+    use sui::{clock::Clock};
+    use 0x2::coin;
+    use sui::coin::{Coin};
+    use sui::sui::{SUI};
+
     public struct Main has key {
         id: UID,
         owner: address,
-        nonce: u64,
-        message_fee: u64,
+        nonce: u32,
+        message_fee: u64
     }
 
     const EUnauthorized: u64 = 0;
+    const EInsufficientBalance: u64 = 1;
 
     /// Initializes the contract. This function should be called once.
     fun init(ctx: &mut TxContext) {
@@ -25,88 +24,64 @@ module sui_gateway::send {
             id: object::new(ctx),
             owner,
             nonce: 0,
-            message_fee: 0,
+            message_fee: 0
         };
 
         transfer::share_object(main);
     }
 
-    // /// Registers the emitter with the Wormhole contract.
-    // public entry fun register_emitter(
-    //     main: &mut Main,
-    //     coins: &mut Coin<SUI>,
-    //     ctx: &mut TxContext
-    // ) {
-    //     let sender = tx_context::sender(ctx);
-    //     assert!(sender == main.owner, error::unauthorized());
-
-    //     let wormhole_package = package::claim(main.wormhole, ctx);
-    //     let (emitter_cap, success) = package::execute_entry_function(
-    //         &wormhole_package,
-    //         "wormhole",
-    //         "register_emitter",
-    //         vector::empty<package::TypeTag>(),
-    //         vector[bcs::to_bytes(&sender)],
-    //         vector[coin::into_balance(coins)],
-    //         ctx
-    //     );
-
-    //     assert!(success, error::internal(1));
-
-    //     // Store the EmitterCap
-    //     transfer::transfer(EmitterCap { id: object::new(ctx) }, sender);
-
-    //     package::return_claimed(wormhole_package);
-    // }
+    public fun get_emitter_cap(
+        main: &mut Main,
+        wormhole_state: &State,
+        ctx: &mut TxContext
+    ): EmitterCap {
+        let sender = tx_context::sender(ctx);
+        assert!(sender == main.owner, EUnauthorized);
+        let emitter_cap = wormhole::emitter::new(wormhole_state, ctx);
+        (emitter_cap)
+    }
 
     /// Updates the message fee by querying the Wormhole contract.
-    public entry fun update_message_fee(
+    public fun update_message_fee(
         main: &mut Main,
-        wormhole_state: &wormhole::state::State,
+        wormhole_state: &State,
         ctx: &mut TxContext
-    ) {
+    ): u64 {
         let sender = tx_context::sender(ctx);
         assert!(sender == main.owner, EUnauthorized);
         main.message_fee = wormhole::state::message_fee(wormhole_state);
+        (main.message_fee)
     }
 
-    // /// Sends a message via the Wormhole contract.
-    // public entry fun send_message(
-    //     main: &mut Main,
-    //     emitter_cap: &EmitterCap,
-    //     message: vector<u8>,
-    //     coins: &mut Coin<SUI>,
-    //     ctx: &mut TxContext
-    // ) {
-    //     let sender = tx_context::sender(ctx);
-    //     let amount = coin::value(coins);
+    /// Sends a message via the Wormhole contract.
+    public fun send_message(
+        main: &mut Main,
+        wormhole_state: &mut State,
+        emitter_cap: &mut EmitterCap,
+        clock: &Clock,
+        message: vector<u8>,
+        coins: Coin<SUI>,
+        ctx: &mut TxContext
+    ): u64 {
+        assert!(coin::value(&coins) >= main.message_fee, EInsufficientBalance);
 
-    //     assert!(amount >= main.message_fee, error::insufficient_balance());
+        main.nonce = main.nonce + 1;
 
-    //     main.nonce = main.nonce + 1;
+        let messageTicket = wormhole::publish_message::prepare_message(
+            emitter_cap,
+            main.nonce,
+            message
+        );
 
-    //     let wormhole_package = package::claim(main.wormhole, ctx);
-    //     let (sequence, success) = package::execute_entry_function(
-    //         &wormhole_package,
-    //         "wormhole",
-    //         "publish_message",
-    //         vector::empty<package::TypeTag>(),
-    //         vector[
-    //             bcs::to_bytes(&main.nonce),
-    //             message,
-    //             bcs::to_bytes(&0u32), // consistency_level
-    //         ],
-    //         vector[coin::into_balance(coins)],
-    //         ctx
-    //     );
+        let seq = wormhole::publish_message::publish_message(
+            wormhole_state,
+            coins,
+            messageTicket,
+            clock
+        );
 
-    //     assert!(success, error::internal(1));
-
-    //     // Emit an event with the sequence number
-    //     // ... (Event emission logic goes here)
-
-    //     package::return_claimed(wormhole_package);
-    // }
+        (seq)
+    }
 
     // /// Encodes the message according to the specified format.
     // fun encode_message(

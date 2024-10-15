@@ -51,11 +51,16 @@ export const deploySuiContracts = async () => {
 }
 
 
-export const callContract = async ({ contractId, method, params, paramValues = {}, gas = 20000000n, deposit = 0n }: { contractId: string, method: string, params: string, paramValues?: object, gas?: bigint, deposit?: bigint }) => { 
-  console.log(blue(`Calling SUI contract ${contractId}, method: ${method}, params: ${params}, paramValues: ${paramValues}`));
-  const paramValuesStr = Object.entries(paramValues).map(([key, value]) => `--assign ${key} @${value}`).join(' ');
-  const ret = execShell(`sui client ptb ${paramValuesStr} --move-call ${contractId}::${method} ${params} --gas-budget ${gas} --json`)
-  console.log(green('Contract called successfully'));
+export const execPTB = async ({ cmd, gas = 20000000n, deposit = 0n }: { cmd: string, gas?: bigint, deposit?: bigint }) => { 
+  console.log(blue("Executing SUI PTB..."));
+  const ret = execShell(`sui client ptb
+    --move-call sui::tx_context::sender
+    --assign sender
+    ${cmd}
+    --gas-budget ${gas}
+    --json
+  `.replace(/\n+/g, ' '))
+  console.log(green('PTB executed successfully'));
   const output = ret.stdout + ret.stderr;
   const json = parseTransactionJson(output);
   return json;

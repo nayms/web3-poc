@@ -1,10 +1,10 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { bold, green, red } from 'yoctocolors-cjs';
+import { bold, green, red, yellowBright } from 'yoctocolors-cjs';
 import { 
   logSection
 } from './evm';
-import { SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID, buildSuiContracts, callContract, deploySuiContracts } from './sui';
+import { SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID, buildSuiContracts, deploySuiContracts, execPTB } from './sui';
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -23,16 +23,48 @@ async function main() {
   const deployed = await deploySuiContracts()
   console.log(green('SUI contracts deployed successfully'));
 
-  await callContract({
-    contractId: deployed.contractId,
-    params: 'main wormhole_state',
-    paramValues: {
-      main: deployed.mainObjectId,
-      wormhole_state: SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID,
-    },
-    method: 'send::update_message_fee', 
+  logSection('Updating message fee');
+
+  await execPTB({
+    cmd: `
+    --assign main @${deployed.mainObjectId}
+    --assign wormhole_state @${SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID}
+    --move-call ${deployed.contractId}::send::update_message_fee main wormhole_state
+    `
   })
-  console.log(green('Message fee updated successfully'));
+  
+  logSection('Getting emitter cap');
+
+  let json = await execPTB({
+    cmd: `
+    --assign main @${deployed.mainObjectId}
+    --assign wormhole_state @${SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID}
+    --move-call ${deployed.contractId}::send::get_emitter_cap main wormhole_state
+    --assign emitter_cap
+    --transfer-objects [emitter_cap] sender
+    `
+  })
+
+  const cap = json.objectChanges.find((change: any) => change.type === 'created' && change.objectType.endsWith('::EmitterCap'))
+  console.log(bold(yellowBright(`Emitter Cap Object ID: ${cap.objectId}`)))
+
+  logSection('Sending message');  
+
+  json = await execPTB({
+    cmd: `
+    --assign main @${deployed.mainObjectId}
+    --assign wormhole_state @${SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID}
+    --assign emitter_cap @${cap.objectId}
+    --assign message "'Hello EVM!'"
+    --assign clock @0x6
+    --split-coins gas [0]
+    --assign coins
+    --move-call ${deployed.contractId}::send::send_message main wormhole_state emitter_cap clock message coins.0
+    --assign seq
+    `
+  })
+
+  console.log(json)
 }
 
 main().then(() => {
@@ -44,4 +76,3 @@ main().then(() => {
   console.error(red(error.stack || error.message));
   process.exit(1);
 });
-
