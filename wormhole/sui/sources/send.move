@@ -31,6 +31,7 @@ module sui_gateway::send {
         transfer::share_object(main);
     }
 
+    /// Returns a new emitter cap that will be used to send messages.
     public fun get_emitter_cap(
         main: &mut Main,
         wormhole_state: &State,
@@ -84,7 +85,12 @@ module sui_gateway::send {
         );
     }
 
-    /// Encodes the message according to the specified format.
+    /// Encodes the message
+    ///
+    /// The message is encoded as follows:
+    /// - 1 byte payload ID
+    /// - 2 bytes length of the message
+    /// - message bytes
     fun encode_message(
         payload_id: u8,
         message: vector<u8>
