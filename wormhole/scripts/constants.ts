@@ -31,3 +31,5 @@ export const WORMHOLE_NETWORKS = {
     wormholeFinality: 0,
   }
 };
+
+export const THE_MESSAGE = 'Nayms is in the house!';

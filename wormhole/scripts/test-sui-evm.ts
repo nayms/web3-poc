@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { bold, green, red, yellow, yellowBright } from 'yoctocolors-cjs';
-import { WORMHOLE_NETWORKS } from './constants';
+import { THE_MESSAGE, WORMHOLE_NETWORKS } from './constants';
 import { 
   buildEvmContracts,
   getOrDeployEvmContract,
@@ -66,7 +66,7 @@ async function main() {
     --assign main @${deployed.mainObjectId}
     --assign wormhole_state @${SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID}
     --assign emitter_cap @${cap.objectId}
-    --assign message "'Hello EVM!'"
+    --assign message "'${THE_MESSAGE}'"
     --assign clock @0x6
     --split-coins gas [0]
     --assign coins

@@ -40,22 +40,20 @@ Now to run the code:
 1. Install [Rust](https://www.rust-lang.org/tools/install) and [Foundry](https://getfoundry.sh/).
 2. Run `foundryup`.
 3. Run `npm run test-evm-evm` to deploy the EVM contracts to both `Arbitrum Sepolia` and `Base Sepolia` networks.
-    * To test using previously deployed contracts: `npm run test-evm-evm -- --arbitrum-address 0x. --base-address 0x.`
-      * Example contracts you can use:
-        * Arbitrum Sepolia - [0x5f0f7f263ea6a62ffd6f9070183468ac58e38719](https://sepolia.arbiscan.io/address/0x5f0f7f263ea6a62ffd6f9070183468ac58e38719)
-        * Base Sepolia - [0x82af0b266d0b671f65982aab78a3373ce80631d4](https://sepolia.basescan.org/address/0x82af0b266d0b671f65982aab78a3373ce80631d4)
+    * To test using previously deployed contracts: `npm run test-evm-evm -- --arbitrum-address 0x5f0f7f263ea6a62ffd6f9070183468ac58e38719 --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
 4. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
 
 ### Testnet transfer: Sui testnet -> Base Sepolia
 
 1. Install [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
 2. Run `npm run test-sui-evm`
-3. 
+    * To test using previously deployed contracts: `npm run test-evm-evm -- --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
+3. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
 
 Useful references:
 * https://github.com/abhi3700/sui-playground
 * https://move-book.com/
-
+* https://docs.sui.io/
 
 ### Testnet transfer: NEAR testnet -> Base Sepolia
 

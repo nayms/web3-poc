@@ -2,6 +2,7 @@ import { pad, parseEventLogs } from 'viem';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { bold, green, red, yellow } from 'yoctocolors-cjs';
+import { THE_MESSAGE } from './constants';
 import { 
   buildEvmContracts, 
   getOrDeployEvmContract, 
@@ -42,7 +43,7 @@ async function main() {
   // Send message from Arbitrum to Base
   logSection('Sending message from Arbitrum Sepolia to Base Sepolia');
 
-  const message = 'Nayms is in the house!';
+  const message = THE_MESSAGE
   console.log(yellow(`Message: "${message}"`));
 
   const receipt = await sendAndConfirmEvmTransaction(
