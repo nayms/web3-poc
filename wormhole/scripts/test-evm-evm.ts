@@ -43,14 +43,12 @@ async function main() {
   // Send message from Arbitrum to Base
   logSection('Sending message from Arbitrum Sepolia to Base Sepolia');
 
-  const message = THE_MESSAGE
-  console.log(yellow(`Message: "${message}"`));
-
   const receipt = await sendAndConfirmEvmTransaction(
     // @ts-ignore
-    await arbitrum.contract.write.sendMessage([message]),
+    await arbitrum.contract.write.sendMessage([THE_MESSAGE]),
     networks.arbitrum
   );
+  const txId = receipt.transactionHash
 
   logSection('Fetching sender and sequence');
 
@@ -72,7 +70,7 @@ async function main() {
 
   // Use the new fetchAndProcessVAA function
   logSection('Fetching and Processing VAA');
-  await fetchAndProcessVAA(networks.arbitrum.wormholeChainId, sender, sequence, base, networks.base);
+  await fetchAndProcessVAA({ txId, chainId: networks.arbitrum.wormholeChainId, sender, sequence, destEvmContract: base, network: networks.base });
 }
 
 main().then(() => {

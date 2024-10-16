@@ -76,6 +76,7 @@ async function main() {
 
   const messageEvent = json.events.find((event: any) => event.type.endsWith('::WormholeMessage'))
   const { sequence, sender} = messageEvent.parsedJson
+  const txId = json.digest
   console.log(bold(yellowBright(`Sequence: ${sequence}`)))
   console.log(bold(yellowBright(`Sender: ${sender}`)))
 
@@ -88,7 +89,7 @@ async function main() {
   );
 
   logSection('Fetching and Processing VAA');
-  await fetchAndProcessVAA(WORMHOLE_NETWORKS.sui.wormholeChainId, sender, sequence, base, networks.base);
+  await fetchAndProcessVAA({ txId, chainId: WORMHOLE_NETWORKS.sui.wormholeChainId, sender, sequence, destEvmContract: base, network: networks.base });
 }
 
 main().then(() => {

@@ -1,6 +1,6 @@
 import { deserialize } from '@wormhole-foundation/sdk';
 import shell from 'shelljs';
-import { blue, green, red, yellow } from "yoctocolors-cjs";
+import { blue, green, magenta, red, yellow } from "yoctocolors-cjs";
 import { type networks, sendAndConfirmEvmTransaction } from './evm';
 
 
@@ -59,7 +59,21 @@ export const fetchVAA = async (chainId: number, emitterAddress: string, sequence
 };
 
 
-export async function fetchAndProcessVAA(chainId: number, sender: string, sequence: bigint, destEvmContract: any, network: typeof networks[keyof typeof networks]) {
+export async function fetchAndProcessVAA({
+  txId,
+  chainId,
+  sender,
+  sequence,
+  destEvmContract,
+  network
+}: {
+  txId: string,
+  chainId: number,
+  sender: string,
+  sequence: bigint,
+  destEvmContract: any,
+  network: typeof networks[keyof typeof networks],
+}) {
   // Fetch VAA from wormhole api
   const vaaBase64 = await fetchVAA(chainId, sender, sequence);
   const vaaUint8Array = base64ToUint8Array(vaaBase64);
@@ -67,6 +81,12 @@ export async function fetchAndProcessVAA(chainId: number, sender: string, sequen
   // Decode VAA
   const decodedVAA = deserialize("Uint8Array", vaaUint8Array);
   // console.log(yellow("Decoded VAA:"), decodedVAA);
+
+  console.log(magenta(`
+----------------------------------------
+Wormhole scan link: https://wormholescan.io/#/tx/${txId}?network=Testnet
+----------------------------------------
+`))
 
   console.log('Submitting VAA');
 
