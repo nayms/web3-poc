@@ -1,4 +1,3 @@
-import { deserialize } from "@wormhole-foundation/sdk";
 import { pad, parseEventLogs } from 'viem';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -11,7 +10,7 @@ import {
   sendAndConfirmEvmTransaction, 
   wormholeCoreAbi 
 } from './evm';
-import { base64ToUint8Array, fetchVAA } from "./utils";
+import { fetchAndProcessVAA } from './utils'; 
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -52,7 +51,7 @@ async function main() {
     networks.arbitrum
   );
 
-  logSection('Fetching VAA');
+  logSection('Fetching sender and sequence');
 
   const logs = parseEventLogs({
     abi: wormholeCoreAbi,
@@ -70,46 +69,9 @@ async function main() {
   console.log(yellow(`Message sender: ${sender}`));
   console.log(yellow(`Message sequence: ${sequence}`));
 
-  // fetch VAA from wormhole api
-  const vaaBase64 = await fetchVAA(networks.arbitrum.wormholeChainId, sender, sequence)
-  const vaaUint8Array = base64ToUint8Array(vaaBase64);
-  // decode vaa
-  const decodedVAA = deserialize("Uint8Array", vaaUint8Array);
-  console.log(yellow("Decoded VAA:"), decodedVAA);
-
-  logSection('Submitting VAA to Base Sepolia');
-
-  const vaaHex = `0x${Buffer.from(vaaUint8Array).toString('hex')}`;
-
-  // Get the initial number of messages
-  const initialNumberOfMessages = await base.contract.read.getNumberOfReceivedMessages();
-  console.log(yellow(`Initial number of messages: ${initialNumberOfMessages}`));
-
-  // Submit the VAA
-  await sendAndConfirmEvmTransaction(
-    // @ts-ignore
-    await base.contract.write.receiveMessage([vaaHex]),
-    networks.base
-  );
-
-  logSection('Checking to see if message was received on Base Sepolia');
-
-  // Get the updated number of messages
-  const updatedNumberOfMessages = await base.contract.read.getNumberOfReceivedMessages();
-  console.log(yellow(`Updated number of messages: ${updatedNumberOfMessages}`));
-
-  // Check if the number of messages increased by 1
-  if (updatedNumberOfMessages === initialNumberOfMessages + 1n) {
-    console.log(green('Number of messages increased by 1 as expected.'));
-  } else {
-    console.log(red(`Unexpected change in number of messages. Expected ${initialNumberOfMessages + 1n}, got ${updatedNumberOfMessages}`));
-  }
-
-  const msgHash = await base.contract.read.receivedMessageHashes([updatedNumberOfMessages - 1n]);
-  console.log(yellow(`Message hash: ${msgHash}`));
-
-  const msg = await base.contract.read.receivedMessages([msgHash]);
-  console.log(green(`Received message: "${msg}"`));
+  // Use the new fetchAndProcessVAA function
+  logSection('Fetching and Processing VAA');
+  await fetchAndProcessVAA(networks.arbitrum.wormholeChainId, sender, sequence, base, networks.base);
 }
 
 main().then(() => {

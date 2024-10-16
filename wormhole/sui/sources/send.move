@@ -15,6 +15,7 @@ module sui_gateway::send {
 
     const EUnauthorized: u64 = 0;
     const EInsufficientBalance: u64 = 1;
+    const EInvalidMessageLength: u64 = 2;
 
     /// Initializes the contract. This function should be called once.
     fun init(ctx: &mut TxContext) {
@@ -61,16 +62,18 @@ module sui_gateway::send {
         clock: &Clock,
         message: vector<u8>,
         coins: Coin<SUI>,
-        ctx: &mut TxContext
+        _ctx: &mut TxContext
     ) {
         assert!(coin::value(&coins) >= main.message_fee, EInsufficientBalance);
 
         main.nonce = main.nonce + 1;
 
+        let encodedMessage = encode_message(1, message);
+
         let messageTicket = wormhole::publish_message::prepare_message(
             emitter_cap,
             main.nonce,
-            message
+            encodedMessage
         );
 
         wormhole::publish_message::publish_message(
@@ -81,21 +84,18 @@ module sui_gateway::send {
         );
     }
 
-    // /// Encodes the message according to the specified format.
-    // fun encode_message(
-    //     payload_id: u8,
-    //     message: &string::String
-    // ): vector<u8> {
-    //     let message_bytes = string::bytes(message);
-    //     let length = vector::length(&message_bytes);
-    //     assert!(length <= 0xFFFF, error::invalid_argument(0)); // Ensure length fits in two bytes.
-
-    //     let mut result = vector::empty<u8>();
-    //     vector::push_back(&mut result, payload_id);
-    //     vector::push_back(&mut result, (length >> 8) as u8);
-    //     vector::push_back(&mut result, (length & 0xFF) as u8);
-    //     vector::append(&mut result, message_bytes);
-
-    //     result
-    // }
+    /// Encodes the message according to the specified format.
+    fun encode_message(
+        payload_id: u8,
+        message: vector<u8>
+    ): vector<u8> {
+        let length = vector::length(&message);
+        assert!(length <= 0xFFFF, EInvalidMessageLength); // Ensure length fits in two bytes.
+        let mut result = vector::empty<u8>();
+        vector::push_back(&mut result, payload_id);
+        vector::push_back(&mut result, (length >> 8) as u8);
+        vector::push_back(&mut result, (length & 0xFF) as u8);
+        vector::append(&mut result, message);
+        (result)
+    }
 }

@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { bold, green, red, yellowBright } from 'yoctocolors-cjs';
+import { bold, green, red, yellow, yellowBright } from 'yoctocolors-cjs';
 import { WORMHOLE_NETWORKS } from './constants';
 import { 
   buildEvmContracts,
@@ -10,6 +10,7 @@ import {
   sendAndConfirmEvmTransaction
 } from './evm';
 import { SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID, buildSuiContracts, deploySuiContracts, execPTB } from './sui';
+import { fetchAndProcessVAA } from './utils'; 
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -86,8 +87,8 @@ async function main() {
     networks.base
   );
 
-  // TODO: fetch VAA from wormhole api and submit to Base
-  // At present the VAA doesn't seem to be available in the wormhole api
+  logSection('Fetching and Processing VAA');
+  await fetchAndProcessVAA(WORMHOLE_NETWORKS.sui.wormholeChainId, sender, sequence, base, networks.base);
 }
 
 main().then(() => {
