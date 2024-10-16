@@ -62,7 +62,7 @@ module sui_gateway::send {
         message: vector<u8>,
         coins: Coin<SUI>,
         ctx: &mut TxContext
-    ): u64 {
+    ) {
         assert!(coin::value(&coins) >= main.message_fee, EInsufficientBalance);
 
         main.nonce = main.nonce + 1;
@@ -73,14 +73,12 @@ module sui_gateway::send {
             message
         );
 
-        let seq = wormhole::publish_message::publish_message(
+        wormhole::publish_message::publish_message(
             wormhole_state,
             coins,
             messageTicket,
             clock
         );
-
-        (seq)
     }
 
     // /// Encodes the message according to the specified format.

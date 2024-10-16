@@ -1,8 +1,13 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { bold, green, red, yellowBright } from 'yoctocolors-cjs';
+import { WORMHOLE_NETWORKS } from './constants';
 import { 
-  logSection
+  buildEvmContracts,
+  getOrDeployEvmContract,
+  logSection,
+  networks,
+  sendAndConfirmEvmTransaction
 } from './evm';
 import { SUI_TESTNET_WORMHOLE_STATE_OBJECT_ID, buildSuiContracts, deploySuiContracts, execPTB } from './sui';
 
@@ -15,6 +20,11 @@ const argv = (yargs(hideBin(process.argv))
   .argv) as any
 
 async function main() {
+  await buildEvmContracts()
+
+  // Get or deploy contracts
+  const base = await getOrDeployEvmContract(networks.base, argv['base-address']);
+
   logSection('Building SUI Contracts');
   await buildSuiContracts()
   console.log(green('SUI contracts built successfully'));
@@ -48,7 +58,7 @@ async function main() {
   const cap = json.objectChanges.find((change: any) => change.type === 'created' && change.objectType.endsWith('::EmitterCap'))
   console.log(bold(yellowBright(`Emitter Cap Object ID: ${cap.objectId}`)))
 
-  logSection('Sending message');  
+  logSection('Sending message from SUI to EVM');  
 
   json = await execPTB({
     cmd: `
@@ -60,11 +70,24 @@ async function main() {
     --split-coins gas [0]
     --assign coins
     --move-call ${deployed.contractId}::send::send_message main wormhole_state emitter_cap clock message coins.0
-    --assign seq
     `
   })
 
-  console.log(json)
+  const messageEvent = json.events.find((event: any) => event.type.endsWith('::WormholeMessage'))
+  const { sequence, sender} = messageEvent.parsedJson
+  console.log(bold(yellowBright(`Sequence: ${sequence}`)))
+  console.log(bold(yellowBright(`Sender: ${sender}`)))
+
+  // register arbitrum contract as emitter on base
+  logSection('Registering SUI sender as emitter on Base');
+  await sendAndConfirmEvmTransaction(
+    // @ts-ignore
+    await base.contract.write.registerEmitter([WORMHOLE_NETWORKS.sui.wormholeChainId, sender]),
+    networks.base
+  );
+
+  // TODO: fetch VAA from wormhole api and submit to Base
+  // At present the VAA doesn't seem to be available in the wormhole api
 }
 
 main().then(() => {

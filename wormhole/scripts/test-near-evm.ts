@@ -84,12 +84,15 @@ async function main() {
   console.log(blue(`Emitter ID: ${emitterId}`));
   console.log(blue(`Message sequence: ${messageSequence}`));
 
-  // fetch VAA from wormhole api
-  const vaaBase64 = await fetchVAA(WORMHOLE_NETWORKS.near.wormholeChainId, emitterId, messageSequence)
-  const vaaUint8Array = base64ToUint8Array(vaaBase64);
-  // decode vaa
-  const decodedVAA = deserialize("Uint8Array", vaaUint8Array);
-  console.log(yellow("Decoded VAA:"), decodedVAA);
+  // TODO: fetch VAA from wormhole api and submit to Base
+  // At present the VAA doesn't seem to be available in the wormhole api
+
+  // // fetch VAA from wormhole api
+  // const vaaBase64 = await fetchVAA(WORMHOLE_NETWORKS.near.wormholeChainId, emitterId, messageSequence)
+  // const vaaUint8Array = base64ToUint8Array(vaaBase64);
+  // // decode vaa
+  // const decodedVAA = deserialize("Uint8Array", vaaUint8Array);
+  // console.log(yellow("Decoded VAA:"), decodedVAA);
 }
 
 main().then(() => {
