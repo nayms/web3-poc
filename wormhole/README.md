@@ -46,12 +46,22 @@ Now to run the code:
         * Base Sepolia - [0x82af0b266d0b671f65982aab78a3373ce80631d4](https://sepolia.basescan.org/address/0x82af0b266d0b671f65982aab78a3373ce80631d4)
 4. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
 
+### Testnet transfer: Sui testnet -> Base Sepolia
+
+1. Install [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
+2. Run `npm run test-sui-evm`
+3. 
+
+Useful references:
+* https://github.com/abhi3700/sui-playground
+* https://move-book.com/
+
 
 ### Testnet transfer: NEAR testnet -> Base Sepolia
 
 1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
-4. Run `npm run test-near-evm`
-5. _TBC_ - at present the NEAR transaction isn't showing up in wormholescan so we can't fetch the VAA either, trying to get support on this.
+2. Run `npm run test-near-evm`
+3. _TBC_ - at present the NEAR transaction isn't showing up in wormholescan so we can't fetch the VAA either, trying to get support on this.
 
 
 ### Local test (NOT YET WORKING!)

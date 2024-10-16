@@ -22,5 +22,12 @@ export const WORMHOLE_NETWORKS = {
     wormholeAddress: 'wormhole.wormhole.testnet',
     wormholeChainId: 15,
     wormholeFinality: 200,
+  },
+  sui: {
+    name: 'Sui Testnet',
+    explorer: 'https://suiscan.xyz/testnet',
+    wormholeAddress: '0xf47329f4344f3bf0f8e436e2f7b485466cff300f12a166563995d3888c296a94',
+    wormholeChainId: 21,
+    wormholeFinality: 0,
   }
 };
