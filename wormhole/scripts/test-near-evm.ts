@@ -4,11 +4,9 @@ import { hideBin } from 'yargs/helpers';
 import { blue, bold, green, red, yellow } from 'yoctocolors-cjs';
 import { WORMHOLE_NETWORKS } from './constants';
 import { 
-  buildEvmContracts, 
   logSection
 } from './evm';
-import { buildNearContracts, callContract, callContractView, createNearAccount, deployNearContracts } from "./near";
-import { base64ToUint8Array, fetchVAA } from './utils';
+import { buildNearContracts, callContract, deployNearContracts } from "./near";
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -19,9 +17,7 @@ const argv = (yargs(hideBin(process.argv))
   .argv) as any
 
 async function main() {
-  logSection('Creating NEAR Account');
-  const nearAccount = await createNearAccount()
-  console.log(yellow(`NEAR Account created: ${nearAccount}`));
+  const nearAccount = `naymspoc.near`
 
   logSection('Building NEAR Contracts');
   await buildNearContracts()
