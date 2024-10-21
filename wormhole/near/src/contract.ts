@@ -22,11 +22,14 @@ class Main {
   }
 
   @initialize({})
-  init({ wormhole, chainId }: { wormhole: string; chainId: number }): void {
+  init(): void {
     assert(!near.storageRead('STATE'), "Already initialized");
-    assert(chainId > 0, "invalid chainId");
-
     this.owner = near.predecessorAccountId();
+  }
+
+  @call({})
+  setParams({ wormhole, chainId }: { wormhole: string; chainId: number }): void {
+    assert(chainId > 0, "invalid chainId");
     this.wormhole = wormhole;
     this.chainId = chainId;
   }

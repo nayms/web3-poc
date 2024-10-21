@@ -1,12 +1,16 @@
-import { deserialize } from '@wormhole-foundation/sdk';
+import { setTimeout } from 'node:timers/promises';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { blue, bold, green, red, yellow } from 'yoctocolors-cjs';
 import { WORMHOLE_NETWORKS } from './constants';
 import { 
-  logSection
+  getOrDeployEvmContract,
+  logSection,
+  sendAndConfirmEvmTransaction,
+  networks
 } from './evm';
 import { buildNearContracts, callContract, deployNearContracts } from "./near";
+import { fetchAndProcessVAA } from './utils';
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -14,41 +18,69 @@ const argv = (yargs(hideBin(process.argv))
     type: 'string',
     description: 'Existing contract address on Base Sepolia',
   })
+  .option('deploy-contract', {
+    type: 'boolean',
+    description: 'Whether the contract should be deployed',
+  })
   .argv) as any
+
+async function waitForNetwork() {
+  await setTimeout(10000);
+}
 
 async function main() {
   const nearAccount = `naymspoc.near`
-
-  logSection('Building NEAR Contracts');
-  await buildNearContracts()
-  console.log(green('NEAR contracts built successfully'));
-
-  logSection('Deploying NEAR Contracts');
-  await deployNearContracts({ nearAccount })
-  console.log(green('NEAR contracts deployed successfully'));
-
   const nearNetwork = WORMHOLE_NETWORKS.near
+
+  // Get or deploy contracts
+  const base = await getOrDeployEvmContract(networks.base, argv['base-address']);
+
+  if (!argv.deployContract) {
+    logSection('Assuming the NEAR contract has already been deployed');
+  } else {
+    logSection('Building NEAR Contracts');
+    await buildNearContracts()
+    console.log(green('NEAR contracts built successfully'));
   
-  logSection('Initializing NEAR Contract');
+    logSection('Deploying NEAR Contracts');
+    await deployNearContracts({ nearAccount })
+    console.log(green('NEAR contracts deployed successfully'));
+
+    logSection('Initializing NEAR Contract');
+    await callContract({ 
+      nearAccount, 
+      method: 'init', 
+      gas: 100000000000000n 
+    })
+    console.log(green('NEAR contract initialized successfully'));
+  }
+
+  await waitForNetwork();
+
+  logSection('Setting Wormhole Params on NEAR Contract');
   await callContract({ 
     nearAccount, 
-    method: 'init', 
+    method: 'setParams', 
     args: { 
       wormhole: nearNetwork.wormholeAddress, 
       chainId: nearNetwork.wormholeChainId, 
     },
     gas: 100000000000000n 
   })
-  console.log(green('NEAR contract initialized successfully'));
+  console.log(green('Wormhole params set successfully'));
 
-  logSection('Registering Emitter');
-  await callContract({ 
-    nearAccount, 
-    method: 'register_emitter', 
-    gas: 300000000000000n,
-    deposit: 1n,
-  })
-  console.log(green('Emitter registered successfully'));
+  // await waitForNetwork();
+
+  // logSection('Registering Emitter');
+  // await callContract({ 
+  //   nearAccount, 
+  //   method: 'register_emitter', 
+  //   gas: 300000000000000n,
+  //   deposit: 1n,
+  // })
+  // console.log(green('Emitter registered successfully'));
+
+  await waitForNetwork();
 
   logSection('Updating Message Fee');
   await callContract({ 
@@ -58,6 +90,8 @@ async function main() {
   })
   console.log(green('Message fee updated successfully'));
 
+  await waitForNetwork();
+  
   logSection('Sending Message from NEAR to EVM');
   const message = "Hello, EVM!";
   console.log(yellow(`Message: "${message}"`));
@@ -75,20 +109,21 @@ async function main() {
     throw new Error('Failed to parse result output');
   }
   const json = JSON.parse(jsonString);
-  const messageSequence = json.seq;
-  const emitterId = json.emitter;
-  console.log(blue(`Emitter ID: ${emitterId}`));
-  console.log(blue(`Message sequence: ${messageSequence}`));
+  const sequence = json.seq;
+  const sender = json.emitter;
+  console.log(blue(`Sender ID: ${sender}`));
+  console.log(blue(`Message sequence: ${sequence}`));
 
-  // TODO: fetch VAA from wormhole api and submit to Base
-  // At present the VAA doesn't seem to be available in the wormhole api
+  // register near contract as emitter on base
+  logSection('Registering NEAR sender as emitter on Base');
+  await sendAndConfirmEvmTransaction(
+    // @ts-ignore
+    await base.contract.write.registerEmitter([WORMHOLE_NETWORKS.near.wormholeChainId, sender]),
+    networks.base
+  );
 
-  // // fetch VAA from wormhole api
-  // const vaaBase64 = await fetchVAA(WORMHOLE_NETWORKS.near.wormholeChainId, emitterId, messageSequence)
-  // const vaaUint8Array = base64ToUint8Array(vaaBase64);
-  // // decode vaa
-  // const decodedVAA = deserialize("Uint8Array", vaaUint8Array);
-  // console.log(yellow("Decoded VAA:"), decodedVAA);
+  logSection('Fetching and Processing VAA');
+  // await fetchAndProcessVAA({ txId, chainId: WORMHOLE_NETWORKS.sui.wormholeChainId, sender, sequence, destEvmContract: base, network: networks.base });
 }
 
 main().then(() => {
@@ -100,4 +135,3 @@ main().then(() => {
   console.error(red(error.stack || error.message));
   process.exit(1);
 });
-

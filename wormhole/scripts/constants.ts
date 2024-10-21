@@ -17,9 +17,9 @@ export const WORMHOLE_NETWORKS = {
     wormholeFinality: 200,
   },
   near: {
-    name: 'Near Testnet',
-    explorer: 'https://testnet.nearblocks.io',
-    wormholeAddress: 'wormhole.wormhole.testnet',
+    name: 'Near Mainnet',
+    explorer: 'https://nearblocks.io',
+    wormholeAddress: 'contract.wormhole_crypto.near',
     wormholeChainId: 15,
     wormholeFinality: 200,
   },
