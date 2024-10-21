@@ -55,9 +55,22 @@ Useful references:
 * https://move-book.com/
 * https://docs.sui.io/
 
+### Testnet transfer: Solana testnet -> Base Sepolia
+
+1. Setup your [Solana dev environment](https://solana.com/docs/intro/installation).
+    * _Note: For Mac I had problems getting `solana-test-validator` working, and had to install a specific version: `sh -c "$(curl -sSfL release.solana.com/v1.17.31/install)"`_
+1. Run `solana config set --url devnet` to switch to Solana devnet.
+1. Run `solana-keygen new` to generate a new wallet keypair.
+1. Run `solana address` to see the wallet address. Remember this value.
+1. Run `solana airdrop 2` to request an airdrop of Devnet SOL to this wallet.
+2. Run `npm run test-sol-evm --sol-wallet <wallet address>`
+
+
 ### Testnet transfer: NEAR testnet -> Base Sepolia
 
 1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
+1. Run `near account import-account using-web-wallet network-config mainnet`
+    * Login using the account `naymspoc.near`
 2. Run `npm run test-near-evm`
 3. _TBC_ - at present the NEAR transaction isn't showing up in wormholescan so we can't fetch the VAA either, trying to get support on this.
 
