@@ -66,7 +66,7 @@ Currently supported chains along with existing contracts:
 * `polygon_amoy` - Polygon Amoy
   * Existing contract: [`0x01dee1ec3dff2a5ac8ffb846983a795a6ea3f5ba`](https://amoy.polygonscan.com/address/0x01dee1ec3dff2a5ac8ffb846983a795a6ea3f5ba)
 
-_Note: As always, ensure you have enough test ETH/native asset in the test wallet (`0xeb8c6905c5ac29b25b34eef31f783a035735b4de`) to pay for gas._
+_Note: As always, ensure there is enough test ETH/native asset in the test wallet (`0xeb8c6905c5ac29b25b34eef31f783a035735b4de`) to pay for gas._
 
 
 ### Testnet transfer: Sui testnet -> Base Sepolia
