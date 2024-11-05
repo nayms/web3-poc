@@ -59,8 +59,14 @@ Useful references:
 
 1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
 2. Run `npm run test-near-evm`
-3. _TBC_ - at present the NEAR transaction isn't showing up in wormholescan so we can't fetch the VAA either, trying to get support on this.
+3. You should see `Hello EVM!"` received by the Base Sepolia contract.
 
+### Mainnet transfer: NEAR mainnet -> Base Sepolia
+
+1. Install [Near CLI](https://docs.near.org/sdk/js/cli/).
+2. Run `near account import-account` to import the account (`naymspoc2.near`) into your keychain.
+3. Run `npm run test-near-evm -- --network mainnet`
+4. You should see `Hello EVM!"` received by the Base Sepolia contract.
 
 ### Local test (NOT YET WORKING!)
 

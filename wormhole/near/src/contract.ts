@@ -1,4 +1,4 @@
-import { assert, NearBindgen, NearPromise, type PromiseIndex, call, encode, initialize, near, view } from 'near-sdk-js';
+import { assert, NearBindgen, NearPromise, type PromiseIndex, call, encode, initialize, near, str } from 'near-sdk-js';
 
 const BASIC_GAS = BigInt("30000000000000");
 const NO_DEPOSIT = BigInt(0);
@@ -78,10 +78,10 @@ class Main {
     const deposit = near.attachedDeposit();
     assert(deposit >= this.messageFee, "Attached deposit is less than the message fee");
 
-    const encodedMessage = this.encodeMessage({
+    const encodedMessage = str(this.encodeMessage({
       payloadId: 1,
       message,
-    });
+    }));
 
     near.log(`Encoded message: ${encodedMessage}`);
 

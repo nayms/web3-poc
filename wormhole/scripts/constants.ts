@@ -1,5 +1,13 @@
 export const MNEMONIC = 'inch deny wing welcome pumpkin mask snack common avocado vicious recycle horror';
 
+export type WormholeNetwork = {
+  name: string;
+  explorer: string;
+  wormholeAddress: string;
+  wormholeChainId: number;
+  wormholeFinality: number;
+};
+
 // Export networks
 export const WORMHOLE_NETWORKS = {
   arbitrum: { 
@@ -16,9 +24,16 @@ export const WORMHOLE_NETWORKS = {
     wormholeChainId: 10004,
     wormholeFinality: 200,
   },
-  near: {
+  near_testnet: {
+    name: 'Near Testnet',
+    explorer: 'https://testnet.nearblocks.io/',
+    wormholeAddress: 'wormhole.wormhole.testnet',
+    wormholeChainId: 15,
+    wormholeFinality: 200,
+  },
+  near_mainnet: {
     name: 'Near Mainnet',
-    explorer: 'https://nearblocks.io',
+    explorer: 'https://nearblocks.io/',
     wormholeAddress: 'contract.wormhole_crypto.near',
     wormholeChainId: 15,
     wormholeFinality: 200,
@@ -30,6 +45,7 @@ export const WORMHOLE_NETWORKS = {
     wormholeChainId: 21,
     wormholeFinality: 0,
   }
-};
+} as Record<string, WormholeNetwork>;
 
-export const THE_MESSAGE = 'Nayms is in the house!';
+export const THE_MESSAGE = 'Knock, Knock!';
+export const THE_MESSAGE_RESPONSE = 'Go away!';

@@ -1,12 +1,11 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path'
-import shell from 'shelljs';
-import { http, createPublicClient, createWalletClient, getContract, parseAbi } from 'viem';
+import { http, type Chain, createPublicClient, createWalletClient, getContract, parseAbi } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
 import { arbitrumSepolia, baseSepolia } from 'viem/chains';
 import { blue, bold, cyan, green, red, yellow } from 'yoctocolors-cjs';
-import { MNEMONIC, WORMHOLE_NETWORKS } from './constants'
-import { buildExecuteShellCommand, executeShellCommand } from './utils';
+import { MNEMONIC, WORMHOLE_NETWORKS, type WormholeNetwork } from './constants'
+import { buildExecuteShellCommand } from './utils';
 
 const EVM_CWD = path.resolve(__dirname, '..');
 const execShell = buildExecuteShellCommand({ cwd: EVM_CWD });
@@ -42,7 +41,11 @@ export const networks = {
       transport: http(),
     }),
   },
-};
+} as Record<string, WormholeNetwork & {
+  chain: Chain;
+  publicClient: ReturnType<typeof createPublicClient>;
+  walletClient: ReturnType<typeof createWalletClient>;
+}>;
 
 // Export mainArtifact if needed in other files
 export const mainArtifact = JSON.parse(readFileSync(path.resolve(__dirname, '../out/Main.sol/Main.json'), 'utf-8'));
