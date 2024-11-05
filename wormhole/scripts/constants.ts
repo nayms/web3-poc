@@ -10,18 +10,32 @@ export type WormholeNetwork = {
 
 // Export networks
 export const WORMHOLE_NETWORKS = {
-  arbitrum: { 
+  arbitrum_sepolia: { 
     name: 'Arbitrum Sepolia', 
     explorer: 'https://sepolia.arbiscan.io',
     wormholeAddress: '0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35',
     wormholeChainId: 10003,
     wormholeFinality: 200,
   },
-  base: { 
+  base_sepolia: { 
     name: 'Base Sepolia', 
     explorer: 'https://sepolia.basescan.org',
     wormholeAddress: '0x79A1027a6A159502049F10906D333EC57E95F083',
     wormholeChainId: 10004,
+    wormholeFinality: 200,
+  },
+  mainnet_holesky: {
+    name: 'Mainnet Holesky',
+    explorer: 'https://holesky.etherscan.io',
+    wormholeAddress: '0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a',
+    wormholeChainId: 10006,
+    wormholeFinality: 200,
+  },
+  polygon_amoy: {
+    name: 'Polygon Amoy',
+    explorer: 'https://amoy.polygonscan.com',
+    wormholeAddress: '0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35',
+    wormholeChainId: 10007,
     wormholeFinality: 200,
   },
   near_testnet: {

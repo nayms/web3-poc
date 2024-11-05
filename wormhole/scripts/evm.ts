@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path'
 import { http, type Chain, createPublicClient, createWalletClient, getContract, parseAbi } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import { arbitrumSepolia, baseSepolia } from 'viem/chains';
+import { arbitrumSepolia, baseSepolia, holesky, polygonAmoy, sepolia } from 'viem/chains';
 import { blue, bold, cyan, green, red, yellow } from 'yoctocolors-cjs';
 import { MNEMONIC, WORMHOLE_NETWORKS, type WormholeNetwork } from './constants'
 import { buildExecuteShellCommand } from './utils';
@@ -15,8 +15,8 @@ export const account = mnemonicToAccount(MNEMONIC);
 
 // Export networks
 export const networks = {
-  arbitrum: {
-    ...WORMHOLE_NETWORKS.arbitrum,
+  arbitrum_sepolia: {
+    ...WORMHOLE_NETWORKS.arbitrum_sepolia,
     chain: arbitrumSepolia,
     publicClient: createPublicClient({
       chain: arbitrumSepolia,
@@ -28,8 +28,8 @@ export const networks = {
       transport: http(),
     }),
   },
-  base: {
-    ...WORMHOLE_NETWORKS.base,
+  base_sepolia: {
+    ...WORMHOLE_NETWORKS.base_sepolia,
     chain: baseSepolia,
     publicClient: createPublicClient({
       chain: baseSepolia,
@@ -38,6 +38,32 @@ export const networks = {
     walletClient: createWalletClient({
       account,
       chain: baseSepolia,
+      transport: http(),
+    }),
+  },
+  mainnet_holesky: {
+    ...WORMHOLE_NETWORKS.mainnet_holesky,
+    chain: holesky,
+    publicClient: createPublicClient({
+      chain: holesky,
+      transport: http(),
+    }),
+    walletClient: createWalletClient({
+      account,
+      chain: holesky,
+      transport: http(),
+    }),
+  },
+  polygon_amoy: {
+    ...WORMHOLE_NETWORKS.polygon_amoy,
+    chain: polygonAmoy,
+    publicClient: createPublicClient({
+      chain: polygonAmoy,
+      transport: http(),
+    }),
+    walletClient: createWalletClient({
+      account,
+      chain: polygonAmoy,
       transport: http(),
     }),
   },

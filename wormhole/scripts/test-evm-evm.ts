@@ -18,15 +18,15 @@ import { fetchAndProcessVAA } from './utils';
 const argv = (yargs(hideBin(process.argv))
   .option('src-chain', {
     type: 'string',
-    description: 'Source chain to send from (arbitrum or base)',
-    choices: ['arbitrum', 'base'],
-    default: 'arbitrum'
+    description: 'Source chain to send from',
+    choices: Object.keys(networks),
+    default: 'arbitrum_sepolia'
   })
   .option('dst-chain', {
     type: 'string', 
-    description: 'Destination chain to send to (arbitrum or base)',
-    choices: ['arbitrum', 'base'],
-    default: 'base'
+    description: 'Destination chain to send to',
+    choices: Object.keys(networks),
+    default: 'base_sepolia'
   })
   .option('src-address', {
     type: 'string',

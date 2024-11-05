@@ -40,15 +40,41 @@ Now to run the code:
 1. Install [Rust](https://www.rust-lang.org/tools/install) and [Foundry](https://getfoundry.sh/).
 2. Run `foundryup`.
 3. Run `npm run test-evm-evm` to deploy the EVM contracts to both `Arbitrum Sepolia` and `Base Sepolia` networks.
-    * To test using previously deployed contracts: `npm run test-evm-evm -- --arbitrum-address 0x5f0f7f263ea6a62ffd6f9070183468ac58e38719 --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
-4. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
+    * To test using previously deployed contracts: `npm run test-evm-evm -- --src-address 0x5f0f7f263ea6a62ffd6f9070183468ac58e38719 --dst-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
+4. You should see `Received message: "Knock, Knock!"` received by the Base Sepolia contract.
+5. The script will now send a message back the other way through Wormhole.
+4. You should see `Received message: "Go away!"` received by the Arbitrum Sepolia contract.
+
+**More EVM chains**
+
+The `test-evm-evm` script actually allows you to specify the EVM chains you want to send messages between. Simply set the `src-chain` and `dst-chain` options:
+
+```shell
+npm run test-evm-evm --src-chain arbitrum --dst-chain base
+```
+
+And you can still use the `src-address` and `dst-address` for these chains.
+
+Currently supported chains along with existing contracts:
+
+* `arbitrum_sepolia` - Arbitrum Sepolia (this is the default `src-chain`)
+  * Existing contract: [`0x5f0f7f263ea6a62ffd6f9070183468ac58e38719`](https://sepolia.arbiscan.io/address/0x5f0f7f263ea6a62ffd6f9070183468ac58e38719)
+* `base_sepolia` - Base Sepolia (this is the default `dst-chain`)
+  * Existing contract: [`0x82af0b266d0b671f65982aab78a3373ce80631d4`](https://sepolia.basescan.org/address/0x82af0b266d0b671f65982aab78a3373ce80631d4)
+* `mainnet_holesky` - Ethereum Holesky
+  * Existing contract: [`0x01dee1ec3dff2a5ac8ffb846983a795a6ea3f5ba`](https://holesky.etherscan.io/address/0x01dee1ec3dff2a5ac8ffb846983a795a6ea3f5ba)
+* `polygon_amoy` - Polygon Amoy
+  * Existing contract: [`0x01dee1ec3dff2a5ac8ffb846983a795a6ea3f5ba`](https://amoy.polygonscan.com/address/0x01dee1ec3dff2a5ac8ffb846983a795a6ea3f5ba)
+
+_Note: As always, ensure you have enough test ETH/native asset in the test wallet (`0xeb8c6905c5ac29b25b34eef31f783a035735b4de`) to pay for gas._
+
 
 ### Testnet transfer: Sui testnet -> Base Sepolia
 
 1. Install [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
 2. Run `npm run test-sui-evm`
     * To test using previously deployed contracts: `npm run test-evm-evm -- --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
-3. You should see `Received message: "Nayms is in the house!"` received by the Base Sepolia contract.
+3. You should see `Received message: "Knock, Knock!"` received by the Base Sepolia contract.
 
 Useful references:
 * https://github.com/abhi3700/sui-playground
