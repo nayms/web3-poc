@@ -68,6 +68,13 @@ Currently supported chains along with existing contracts:
 
 _Note: As always, ensure there is enough test ETH/native asset in the test wallet (`0xeb8c6905c5ac29b25b34eef31f783a035735b4de`) to pay for gas._
 
+### Testnet transfer: Solana testnet -> Base Sepolia
+
+1. Install [Solana SDK](https://solana.com/docs/intro/installation).
+2. Run `solana config set --url devnet`
+3. Run `solana-keygen new` to create a new wallet
+4. Run `solana address` to see the wallet address
+5. Run `solana airdrop 2` to get 2 SOl airdropped to it
 
 ### Testnet transfer: Sui testnet -> Base Sepolia
 
