@@ -1,23 +1,25 @@
 import path from 'node:path'
-import { CONTRACTS } from "@certusone/wormhole-sdk";
-import { type PostMessageCpiAccounts, deriveAddress, getPostMessageCpiAccounts } from '@certusone/wormhole-sdk/lib/cjs/solana';
-import type { Program } from '@coral-xyz/anchor';
+// import { CONTRACTS } from "@certusone/wormhole-sdk";
+import { deriveAddress, getPostMessageCpiAccounts } from '@certusone/wormhole-sdk/lib/cjs/solana';
 import { ComputeBudgetProgram, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, type Signer, Transaction, type TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { blue, green, yellow } from "yoctocolors-cjs";
-import type { Nayms } from '../../solana/target/types/nayms';
 import { buildExecuteShellCommand } from "../utils";
 import { deriveConfigKey } from './accounts';
 import { createInitializeInstruction } from './instructions/initialize';
 import { createNaymsProgramInterface } from './program';
+import type { BootstrapParams } from './types';
 
 export const NETWORK = "DEVNET";
-export const WORMHOLE_CONTRACTS = CONTRACTS[NETWORK];
-export const CORE_BRIDGE_PID = new PublicKey(WORMHOLE_CONTRACTS.solana.core);
-export const TOKEN_BRIDGE_PID = new PublicKey(WORMHOLE_CONTRACTS.solana.token_bridge);
-export const NAYMS_PROGRAM_ID = new PublicKey("BYFW1vhC1ohxwRbYoLbAWs86STa25i9sD5uEusVjTYNe");
+// export const WORMHOLE_CONTRACTS = CONTRACTS[NETWORK];
+export const CORE_BRIDGE_PID = new PublicKey('3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5'/*WORMHOLE_CONTRACTS.solana.core*/);
+export const NAYMS_PROGRAM_ID = new PublicKey("GPzxCRHR8nJW6U9xqxvZnV4q1ZnfM5qwheCV8UPoaZ9Y");
+
+console.log(blue(`CORE_BRIDGE_PID: ${CORE_BRIDGE_PID.toBase58()}`));
+console.log(blue(`NAYMS_PROGRAM_ID: ${NAYMS_PROGRAM_ID.toBase58()}`));
+
 const DEVNET_RPC_URL = "https://api.devnet.solana.com";
 
-export const PAYER_KEYPAIR = Keypair.fromSecretKey(Uint8Array.from([90,202,92,115,133,75,93,228,100,80,58,95,230,48,1,222,252,48,122,68,72,129,46,239,33,105,85,21,21,34,229,252,140,235,98,117,24,111,73,237,41,62,146,29,39,245,233,125,13,229,143,117,231,217,48,52,120,101,45,220,1,37,219,175]));
+export const SIGNER_KEYPAIR = Keypair.fromSecretKey(Uint8Array.from([90,202,92,115,133,75,93,228,100,80,58,95,230,48,1,222,252,48,122,68,72,129,46,239,33,105,85,21,21,34,229,252,140,235,98,117,24,111,73,237,41,62,146,29,39,245,233,125,13,229,143,117,231,217,48,52,120,101,45,220,1,37,219,175]));
 
 const SOLANA_CWD = path.join(__dirname, '..', '..', 'solana')
 
@@ -26,7 +28,7 @@ const execShell = buildExecuteShellCommand({ cwd: SOLANA_CWD, silent: true, outp
 
 export const checkSolanaBalance = async () => {
   const { connection } = getBootstrapParams();
-  const balance = await connection.getBalance(PAYER_KEYPAIR.publicKey);
+  const balance = await connection.getBalance(SIGNER_KEYPAIR.publicKey);
   const solBalance = balance / LAMPORTS_PER_SOL;
   console.log(`Solana balance: ${solBalance} SOL`);
   if (solBalance < 2.5) {
@@ -59,76 +61,47 @@ export const deploySolanaContract = async () => {
 export const initializeSolanaContract = async () => {
   console.log(blue('Initializing Solana contract...'));
 
-  const { connection, payer } = getBootstrapParams();
+  // TODO: only initialize once
 
-  const initializeIx = await createInitializeInstruction(
-    connection,
-    NAYMS_PROGRAM_ID,
-    payer.publicKey,
-    CORE_BRIDGE_PID
-  );
+  const initializeIx = await createInitializeInstruction(getBootstrapParams())
 
   await sendAndConfirmIx(initializeIx);
 
   console.log(green('Solana contract initialized successfully'));
 }
 
+export const sendMessage = async (message: string) => {
+  const helloMessage = Buffer.alloc(513, message);
+  // TODO
+}
+
 // ================================
 // Utility functions
 // ================================
 
-let bootstrapParams: undefined | {
-  connection: Connection,
-  payer: Signer,
-  realConfig: PublicKey,
-  program: Program<Nayms>,
-  wormholeCpi: PostMessageCpiAccounts,
-  realInitializeAccounts: {
-    owner: PublicKey,
-    config: PublicKey,
-    wormholeProgram: PublicKey,
-    wormholeBridge: PublicKey,
-    wormholeFeeCollector: PublicKey,
-    wormholeEmitter: PublicKey,
-    wormholeSequence: PublicKey,
-    wormholeMessage: PublicKey,
-    clock: PublicKey,
-    rent: PublicKey,
-  },
-} = undefined
+let bootstrapParams: undefined | BootstrapParams = undefined
 
 const getBootstrapParams = () => {
   if (!bootstrapParams) {
     const connection = new Connection(DEVNET_RPC_URL, "processed");
-    const payer = PAYER_KEYPAIR;
-    const realConfig = deriveConfigKey(NAYMS_PROGRAM_ID);
+    const signer = SIGNER_KEYPAIR;
+    const config = deriveConfigKey(NAYMS_PROGRAM_ID);
     const program = createNaymsProgramInterface(connection);
     const wormholeCpi = getPostMessageCpiAccounts(
       NAYMS_PROGRAM_ID,
       CORE_BRIDGE_PID,
-      payer.publicKey,
+      signer.publicKey,
       deriveAddress([Buffer.from("alive")], NAYMS_PROGRAM_ID)
     );
-    const realInitializeAccounts = {
-      owner: payer.publicKey,
-      config: realConfig,
-      wormholeProgram: CORE_BRIDGE_PID,
-      wormholeBridge: wormholeCpi.wormholeBridge,
-      wormholeFeeCollector: wormholeCpi.wormholeFeeCollector,
-      wormholeEmitter: wormholeCpi.wormholeEmitter,
-      wormholeSequence: wormholeCpi.wormholeSequence,
-      wormholeMessage: wormholeCpi.wormholeMessage,
-      clock: wormholeCpi.clock,
-      rent: wormholeCpi.rent,
-    };
 
     bootstrapParams = Object.freeze({
       connection,
-      payer,
-      realConfig,
+      signer,
+      config,
       program,
-      wormholeCpi,
-      realInitializeAccounts,
+      owner: signer.publicKey,
+      wormholeProgram: CORE_BRIDGE_PID,
+      postMessageCpiAccounts: wormholeCpi,
     });
   }
 
@@ -155,16 +128,16 @@ const sendAndConfirmIx = async (
   signerOrSignersOrComputeUnits?: Signer | Signer[] | number,
   computeUnits?: number,
 ) => {
-  const { payer, connection } = getBootstrapParams();
+  const { signer, connection } = getBootstrapParams();
   
   const [signers, units] = (() => {
     if (!signerOrSignersOrComputeUnits)
-      return [[payer], computeUnits];
+      return [[signer], computeUnits];
 
     if (typeof signerOrSignersOrComputeUnits === "number") {
       if(computeUnits !== undefined)
         throw new Error("computeUnits can't be specified twice");
-      return [[payer], signerOrSignersOrComputeUnits];
+      return [[signer], signerOrSignersOrComputeUnits];
     }
 
     return [

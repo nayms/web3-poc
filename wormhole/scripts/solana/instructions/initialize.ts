@@ -1,29 +1,33 @@
 import { getPostMessageCpiAccounts } from "@certusone/wormhole-sdk/lib/cjs/solana";
-import { type Connection, PublicKey, type PublicKeyInitData, type TransactionInstruction } from "@solana/web3.js";
-import { deriveConfigKey, deriveWormholeMessageKey } from "../accounts";
-import { createNaymsProgramInterface } from "../program";
+import { PublicKey, type TransactionInstruction } from "@solana/web3.js";
+import { deriveWormholeMessageKey } from "../accounts";
+import type { BootstrapParams } from "../types";
 
 export async function createInitializeInstruction(
-  connection: Connection,
-  programId: PublicKeyInitData,
-  payer: PublicKeyInitData,
-  wormholeProgramId: PublicKeyInitData
+  params: BootstrapParams,
 ): Promise<TransactionInstruction> {
-  const program = createNaymsProgramInterface(connection, programId);
-  const message = deriveWormholeMessageKey(programId, 1n);
+  const { 
+    program, 
+    owner, 
+    config, 
+    wormholeProgram,
+  } = params;
+
+  const message = deriveWormholeMessageKey(program.programId, 1n);
   const wormholeAccounts = getPostMessageCpiAccounts(
     program.programId,
-    wormholeProgramId,
-    payer,
+    wormholeProgram,
+    owner,
     message
   );
+  
   return program.methods
     .initialize()
     .accounts({
-      owner: new PublicKey(payer),
+      owner,
       // @ts-ignore
-      config: deriveConfigKey(programId),
-      wormholeProgram: new PublicKey(wormholeProgramId),
+      config,
+      wormholeProgram,
       ...wormholeAccounts,
     })
     .instruction();

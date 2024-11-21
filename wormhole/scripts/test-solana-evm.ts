@@ -19,7 +19,7 @@ const argv = (yargs(hideBin(process.argv))
 
 async function main() {
   // Get or deploy contracts
-  const base = await getOrDeployEvmContract(networks.base_sepolia, argv['base-address']);
+  // const base = await getOrDeployEvmContract(networks.base_sepolia, argv['base-address']);
 
   logSection('Checking Solana balance');
   await checkSolanaBalance()  
@@ -31,10 +31,13 @@ async function main() {
   logSection('Deploying Solana Contract');
   await deploySolanaContract()
   console.log(green('Solana contract deployed successfully'));
-
+  
   logSection('Initializing Solana Contract');
   await initializeSolanaContract()
   console.log(green('Solana contract initialized successfully'));
+
+
+  const helloMessage = Buffer.alloc(513, "All your base are belong to us");
 }
 
 main().then(() => {

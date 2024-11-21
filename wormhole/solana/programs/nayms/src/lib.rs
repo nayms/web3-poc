@@ -10,7 +10,7 @@ pub mod error;
 pub mod message;
 pub mod state;
 
-declare_id!("BYFW1vhC1ohxwRbYoLbAWs86STa25i9sD5uEusVjTYNe");
+declare_id!("GPzxCRHR8nJW6U9xqxvZnV4q1ZnfM5qwheCV8UPoaZ9Y");
 
 #[program]
 /// # Forked from Wormhole scaffolding example - https://github.com/wormhole-foundation/wormhole-scaffolding
