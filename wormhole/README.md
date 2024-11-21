@@ -72,15 +72,20 @@ _Note: As always, ensure there is enough test ETH/native asset in the test walle
 
 1. Install [Solana SDK](https://solana.com/docs/intro/installation).
 2. Run `solana config set --url devnet`
-3. Run `solana-keygen new` to create a new wallet
+3. Run `solana-keygen recover --force :prompt` to create a new wallet and enter the following seedphrase:
+  * Seed phrase: `crush desk brain index action subject tackle idea trim unveil lawn live`
 4. Run `solana address` to see the wallet address
-5. Run `solana airdrop 2` to get 2 SOl airdropped to it
+  * It should show: `AV6FgA7wKJ4uYEE8HhKTs6nQUzTzL5bsmPrH6D355VAN`
+5. Run `solana airdrop 5` to get 5 SOL airdropped to it (need >2.5 to deploy the contract)
+6. Run `npm run test-solana-evm`
+    * To test using previously deployed contracts: `npm run test-solana-evm -- --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
+7. You should see `Received message: "Knock, Knock!"` received by the Base Sepolia contract.
 
 ### Testnet transfer: Sui testnet -> Base Sepolia
 
 1. Install [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install).
 2. Run `npm run test-sui-evm`
-    * To test using previously deployed contracts: `npm run test-evm-evm -- --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
+    * To test using previously deployed contracts: `npm run test-sui-evm -- --base-address 0x82af0b266d0b671f65982aab78a3373ce80631d4`
 3. You should see `Received message: "Knock, Knock!"` received by the Base Sepolia contract.
 
 Useful references:
