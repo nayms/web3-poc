@@ -58,6 +58,13 @@ export const WORMHOLE_NETWORKS = {
     wormholeAddress: '0xf47329f4344f3bf0f8e436e2f7b485466cff300f12a166563995d3888c296a94',
     wormholeChainId: 21,
     wormholeFinality: 0,
+  },
+  solana_devnet: {
+    name: 'Solana Devnet',
+    explorer: 'https://explorer.solana.com/?cluster=devnet',
+    wormholeAddress: '3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5',
+    wormholeChainId: 1,
+    wormholeFinality: 0,
   }
 } as Record<string, WormholeNetwork>;
 

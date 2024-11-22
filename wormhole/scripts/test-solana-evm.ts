@@ -1,13 +1,17 @@
+import { keccak256 } from 'viem/utils';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { bold, green, red, yellow, yellowBright } from 'yoctocolors-cjs';
+import { THE_MESSAGE, WORMHOLE_NETWORKS } from './constants';
 import { 
   buildEvmContracts,
   getOrDeployEvmContract,
   logSection,
   networks,
+  sendAndConfirmEvmTransaction,
 } from './evm';
-import { buildSolanaContract, checkSolanaBalance, deploySolanaContract, initializeSolanaContract } from './solana';
+import { buildSolanaContract, checkSolanaBalance, deploySolanaContract, initializeSolanaContract, sendMessage } from './solana';
+import { fetchAndProcessVAA } from './utils';
 
 // Parse command-line arguments
 const argv = (yargs(hideBin(process.argv))
@@ -18,8 +22,7 @@ const argv = (yargs(hideBin(process.argv))
   .argv) as any
 
 async function main() {
-  // Get or deploy contracts
-  // const base = await getOrDeployEvmContract(networks.base_sepolia, argv['base-address']);
+  const base = await getOrDeployEvmContract(networks.base_sepolia, argv['base-address']);
 
   logSection('Checking Solana balance');
   await checkSolanaBalance()  
@@ -36,8 +39,22 @@ async function main() {
   await initializeSolanaContract()
   console.log(green('Solana contract initialized successfully'));
 
+  logSection('Sending message from Solana to EVM');  
+  const { txId, sequence, sender } = await sendMessage(THE_MESSAGE);
+  console.log(green("Message sent successfully"));
+  console.log(bold(yellowBright(`Sequence: ${sequence}`)))
+  console.log(bold(yellowBright(`Sender: ${sender}`)))
 
-  const helloMessage = Buffer.alloc(513, "All your base are belong to us");
+  // register solana contract as emitter on base
+  logSection('Registering Solana sender as emitter on Base');
+  await sendAndConfirmEvmTransaction(
+    // @ts-ignore
+    await base.contract.write.registerEmitter([WORMHOLE_NETWORKS.solana_devnet.wormholeChainId, `0x${sender}`]),
+    networks.base_sepolia
+  );
+
+  // logSection('Fetching and Processing VAA');
+  await fetchAndProcessVAA({ txId, chainId: WORMHOLE_NETWORKS.solana_devnet.wormholeChainId, sender, sequence, destEvmContract: base, network: networks.base_sepolia });
 }
 
 main().then(() => {

@@ -1,17 +1,19 @@
 import path from 'node:path'
 // import { CONTRACTS } from "@certusone/wormhole-sdk";
-import { deriveAddress, getPostMessageCpiAccounts } from '@certusone/wormhole-sdk/lib/cjs/solana';
+import { deriveWormholeEmitterKey } from "@certusone/wormhole-sdk/lib/cjs/solana/wormhole";
 import { ComputeBudgetProgram, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, type Signer, Transaction, type TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
-import { blue, green, yellow } from "yoctocolors-cjs";
+import { blue, magenta, magentaBright, yellow, yellowBright } from "yoctocolors-cjs";
+import { WORMHOLE_NETWORKS } from '../constants';
 import { buildExecuteShellCommand } from "../utils";
-import { deriveConfigKey } from './accounts';
+import { deriveConfigKey, getConfigData } from './accounts';
 import { createInitializeInstruction } from './instructions/initialize';
+import { createSendMessageInstruction } from './instructions/sendMessage';
 import { createNaymsProgramInterface } from './program';
-import type { BootstrapParams } from './types';
+import type { BootstrapParams } from './utils';
 
 export const NETWORK = "DEVNET";
 // export const WORMHOLE_CONTRACTS = CONTRACTS[NETWORK];
-export const CORE_BRIDGE_PID = new PublicKey('3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5'/*WORMHOLE_CONTRACTS.solana.core*/);
+export const CORE_BRIDGE_PID = new PublicKey(WORMHOLE_NETWORKS.solana_devnet.wormholeAddress);
 export const NAYMS_PROGRAM_ID = new PublicKey("GPzxCRHR8nJW6U9xqxvZnV4q1ZnfM5qwheCV8UPoaZ9Y");
 
 console.log(blue(`CORE_BRIDGE_PID: ${CORE_BRIDGE_PID.toBase58()}`));
@@ -39,7 +41,7 @@ export const checkSolanaBalance = async () => {
 export const buildSolanaContract = async () => {
   console.log(blue('Building Solana contracts...'));
   execShell('anchor build');
-  console.log(green('Contracts built successfully'));
+  console.log(blue('Contracts built successfully'));
 };
 
 export const deploySolanaContract = async () => {
@@ -54,25 +56,41 @@ export const deploySolanaContract = async () => {
   }
   console.log(`Deployed ID: ${programId}`);
 
-  console.log(green("Contracts deployed successfully"));
+  console.log(blue("Contracts deployed successfully"));
 }
 
 
 export const initializeSolanaContract = async () => {
   console.log(blue('Initializing Solana contract...'));
 
-  // TODO: only initialize once
-
-  const initializeIx = await createInitializeInstruction(getBootstrapParams())
-
-  await sendAndConfirmIx(initializeIx);
-
-  console.log(green('Solana contract initialized successfully'));
+  // only initialize once
+  const params = getBootstrapParams();
+  const configData = await getConfigData(params);
+  if (configData.owner.toBase58() !== params.owner.toBase58()) {
+    const initializeIx = await createInitializeInstruction(params)
+    await sendAndConfirmIx(initializeIx);
+    console.log(blue('Solana contract initialized successfully'));
+  } else {
+    console.log(blue('Solana contract already initialized'));
+  }
 }
 
 export const sendMessage = async (message: string) => {
-  const helloMessage = Buffer.alloc(513, message);
-  // TODO
+  console.log(yellowBright(`Sending message: ${message}`));
+
+  const params = getBootstrapParams();
+
+  const { txInstruction, sequence } = await createSendMessageInstruction(params, Buffer.from(message));
+  const txId = await sendAndConfirmIx(txInstruction);
+
+  console.log(blue("Message sent successfully"));
+
+  const emitter = await deriveWormholeEmitterKey(params.program.programId);
+  console.log(`Emitter: ${emitter.toBase58()}`);
+  
+  const sender = emitter.toBuffer().toString('hex')
+  
+  return { txId, sequence, sender };
 }
 
 // ================================
@@ -87,12 +105,6 @@ const getBootstrapParams = () => {
     const signer = SIGNER_KEYPAIR;
     const config = deriveConfigKey(NAYMS_PROGRAM_ID);
     const program = createNaymsProgramInterface(connection);
-    const wormholeCpi = getPostMessageCpiAccounts(
-      NAYMS_PROGRAM_ID,
-      CORE_BRIDGE_PID,
-      signer.publicKey,
-      deriveAddress([Buffer.from("alive")], NAYMS_PROGRAM_ID)
-    );
 
     bootstrapParams = Object.freeze({
       connection,
@@ -101,7 +113,6 @@ const getBootstrapParams = () => {
       program,
       owner: signer.publicKey,
       wormholeProgram: CORE_BRIDGE_PID,
-      postMessageCpiAccounts: wormholeCpi,
     });
   }
 
@@ -152,7 +163,13 @@ const sendAndConfirmIx = async (
   if (units)
     tx.add(ComputeBudgetProgram.setComputeUnitLimit({units}));
   try {
-    return await sendAndConfirmTransaction(connection, tx, signers);
+    const txId = await sendAndConfirmTransaction(connection, tx, signers);
+
+    console.log(magenta(`\nTxId: ${txId}`))
+    console.log(magentaBright(getExplorerLink(WORMHOLE_NETWORKS.solana_devnet.explorer, 'tx', txId)))
+    console.log("\n")
+
+    return txId;
   }
   catch (error: any) {
     if (error.transactionLogs) {
@@ -160,4 +177,10 @@ const sendAndConfirmIx = async (
     }
     throw new SendIxError(error);
   }
+}
+
+
+const getExplorerLink = (explorerLink: string, type: 'address' | 'tx', value: string) => {
+  const clusterStart = explorerLink.indexOf('?cluster=')
+  return `${explorerLink.substring(0, clusterStart)}/${type}/${value}${explorerLink.substring(clusterStart)}`;
 }

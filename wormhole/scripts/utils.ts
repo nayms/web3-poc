@@ -88,6 +88,14 @@ Wormhole scan link: https://wormholescan.io/#/tx/${txId}?network=Testnet
 ----------------------------------------
 `))
 
+  console.log(yellow("\nDecoded VAA:\n"));
+  console.log(yellow(`--> Emitter chain: ${decodedVAA.emitterChain}`));
+  console.log(yellow(`--> Emitter address: ${decodedVAA.emitterAddress}`));
+  console.log(yellow(`--> Sequence: ${decodedVAA.sequence}`));
+  console.log(yellow(`--> Timestamp: ${decodedVAA.timestamp}`));
+  console.log(yellow(`--> Consistency level: ${decodedVAA.consistencyLevel}`));
+
+
   console.log('Submitting VAA');
 
   const vaaHex = `0x${Buffer.from(vaaUint8Array).toString('hex')}`;

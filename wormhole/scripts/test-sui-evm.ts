@@ -78,7 +78,7 @@ async function main() {
   console.log(bold(yellowBright(`Sequence: ${sequence}`)))
   console.log(bold(yellowBright(`Sender: ${sender}`)))
 
-  // register arbitrum contract as emitter on base
+  // register sui contract as emitter on base
   logSection('Registering SUI sender as emitter on Base');
   await sendAndConfirmEvmTransaction(
     // @ts-ignore
