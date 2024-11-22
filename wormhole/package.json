@@ -8,11 +8,15 @@
     "setup-sui": "git clone https://github.com/wormhole-foundation/wormhole.git ./sui/wormhole && cp sui/wormhole/sui/wormhole/Move.testnet.toml sui/wormhole/sui/wormhole/Move.toml",
     "test-evm-evm": "ts-node --project tsconfig-node.json ./scripts/test-evm-evm.ts",
     "test-near-evm": "ts-node --project tsconfig-node.json ./scripts/test-near-evm.ts",
-    "test-sui-evm": "ts-node --project tsconfig-node.json ./scripts/test-sui-evm.ts"
+    "test-sui-evm": "ts-node --project tsconfig-node.json ./scripts/test-sui-evm.ts",
+    "test-solana-evm": "ts-node --project tsconfig-node.json ./scripts/test-solana-evm.ts"  
   },
   "author": "Ramesh Nair <ram@hiddentao.com>",
   "license": "ISC",
   "dependencies": {
+    "@certusone/wormhole-sdk": "^0.10.18",
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.5",
     "@wormhole-foundation/sdk": "^0.10.9",
     "dotenv": "^16.4.5",
     "shelljs": "^0.8.5",

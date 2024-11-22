@@ -21,10 +21,8 @@ const argv = (yargs(hideBin(process.argv))
   .argv) as any
 
 async function main() {
-  await buildEvmContracts()
-
   // Get or deploy contracts
-  const base = await getOrDeployEvmContract(networks.base, argv['base-address']);
+  const base = await getOrDeployEvmContract(networks.base_sepolia, argv['base-address']);
 
   logSection('Building SUI Contracts');
   await buildSuiContracts()
@@ -80,7 +78,7 @@ async function main() {
   console.log(bold(yellowBright(`Sequence: ${sequence}`)))
   console.log(bold(yellowBright(`Sender: ${sender}`)))
 
-  // register arbitrum contract as emitter on base
+  // register sui contract as emitter on base
   logSection('Registering SUI sender as emitter on Base');
   await sendAndConfirmEvmTransaction(
     // @ts-ignore
